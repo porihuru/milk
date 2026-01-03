@@ -1,31 +1,29 @@
 <!--
-[JST 2026-01-03 17:00]  okurigana_fall_game_single.html
-スマホ向け・画像なし・送り仮名×落ちゲー（3レーン）
+[JST 2026-01-03 17:00]  okurigana_fall_game_easy_single.html
+送り仮名 × 落ちゲー（簡単版 / 3択タップのみ）
 操作:
-  - 左右スワイプ: レーン移動
-  - 下の3つの候補ボタンタップ: そのレーンへ移動
+  - 下の3つの候補ボタンをタップするだけ（スワイプ・移動なし）
 ルール:
-  - 上から「漢字＋空欄」が落ちてくる
-  - 下の3レーンに表示された候補（かな）から、正しい送り仮名のレーンに入って受ける
-  - 正解: SCORE/COMBO加点  不正解: LIFE減少
-  - LIFE=0でゲームオーバー
+  - 問題が上から落ちてくる
+  - 落ち切る前に正しい送り仮名（かな）をタップ → 正解
+  - 間違い or タイムアウト → ライフ-1
 -->
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>送り仮名 落ちゲー</title>
+  <title>送り仮名 落ちゲー（簡単）</title>
   <style>
     :root{
       --bg:#0e1326;
       --panel:rgba(255,255,255,0.06);
       --panel2:rgba(255,255,255,0.10);
-      --line:rgba(255,255,255,0.18);
       --text:rgba(255,255,255,0.92);
       --muted:rgba(255,255,255,0.68);
       --ok:rgba(120,170,255,0.95);
       --ng:rgba(255,90,120,0.95);
+      --line:rgba(255,255,255,0.18);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
       --radius:16px;
@@ -55,6 +53,7 @@
       padding-bottom: calc(10px + var(--safe-bottom));
     }
 
+    /* 上部HUD */
     .hud{
       margin:0 12px;
       padding:12px 12px;
@@ -96,6 +95,7 @@
       font-weight:900;
     }
 
+    /* フィールド */
     .field{
       margin:0 12px;
       border-radius: var(--radius);
@@ -105,94 +105,63 @@
       position:relative;
       overflow:hidden;
       min-height: 380px;
-      touch-action: pan-y; /* 横スワイプ検知しやすく */
     }
 
-    .laneLine{
-      position:absolute;
-      top:0; bottom:0;
-      width:1px;
-      background: rgba(255,255,255,0.10);
-      pointer-events:none;
-    }
-
+    /* タイムアウト判定ライン */
     .catchLine{
       position:absolute;
       left:0; right:0;
       height:2px;
-      background: rgba(120,170,255,0.35);
-      bottom: 92px;
+      background: rgba(255,255,255,0.10);
+      bottom: 112px;
       pointer-events:none;
     }
     .catchLabel{
       position:absolute;
       right:10px;
-      bottom: calc(92px + 8px);
+      bottom: calc(112px + 8px);
       font-size:11px;
-      color: rgba(120,170,255,0.9);
+      color: var(--muted);
       background: rgba(0,0,0,0.20);
-      border:1px solid rgba(120,170,255,0.25);
+      border:1px solid rgba(255,255,255,0.10);
       padding:4px 8px;
       border-radius:999px;
       pointer-events:none;
     }
 
+    /* 落下する問題カード */
     .falling{
       position:absolute;
-      top:0;
       left:50%;
       transform: translateX(-50%);
+      top: -60px;
       text-align:center;
       pointer-events:none;
       z-index: 5;
     }
     .card{
       display:inline-grid;
-      gap:6px;
-      padding:12px 10px;
-      border-radius:14px;
-      background: rgba(0,0,0,0.22);
-      border:1px solid rgba(255,255,255,0.12);
+      gap:8px;
+      padding:14px 12px;
+      border-radius:16px;
+      background: rgba(0,0,0,0.24);
+      border:1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.28);
     }
     .qText{
-      font-size:30px;
+      font-size:34px;
       font-weight:900;
       letter-spacing:1px;
       line-height:1.0;
       white-space: nowrap;
     }
     .qHint{
-      font-size:11px;
+      font-size:12px;
       color:var(--muted);
       letter-spacing:0.2px;
     }
 
-    .player{
-      position:absolute;
-      bottom: 92px;
-      width: 33.333%;
-      height: 46px;
-      left: 33.333%;
-      display:grid;
-      place-items:center;
-      pointer-events:none;
-      z-index: 6;
-    }
-    .playerInner{
-      width: 82%;
-      height: 34px;
-      border-radius: 999px;
-      background: rgba(120,170,255,0.16);
-      border: 1px solid rgba(120,170,255,0.35);
-      box-shadow: 0 12px 30px rgba(120,170,255,0.10);
-      display:grid;
-      place-items:center;
-      font-weight:900;
-      letter-spacing:0.3px;
-      color: rgba(210,230,255,0.95);
-      font-size: 13px;
-    }
-
+    /* フィードバック */
     .toast{
       position:absolute;
       left:50%;
@@ -211,7 +180,7 @@
     }
     .toast.show{
       opacity:1;
-      animation: toastFade 900ms ease-out forwards;
+      animation: toastFade 850ms ease-out forwards;
     }
     .toast.ok{
       border-color: rgba(120,170,255,0.35);
@@ -227,6 +196,7 @@
       100%{ transform: translateX(-50%) translateY(-10px); opacity:0; }
     }
 
+    /* 下部: 3択ボタン */
     .choices{
       margin:0 12px;
       padding:12px;
@@ -245,11 +215,11 @@
     .choiceBtn{
       border:none;
       border-radius: var(--btnRadius);
-      padding:16px 8px;
+      padding:18px 8px;
       background: rgba(255,255,255,0.10);
       border:1px solid rgba(255,255,255,0.12);
       color: var(--text);
-      font-size:22px;
+      font-size:26px;
       font-weight:900;
       cursor:pointer;
       box-shadow: 0 14px 30px rgba(0,0,0,0.18);
@@ -258,11 +228,11 @@
       transform: translateY(1px);
       filter: brightness(0.98);
     }
-    .choiceBtn.active{
-      outline: 2px solid rgba(120,170,255,0.55);
-      background: rgba(120,170,255,0.18);
-      border-color: rgba(120,170,255,0.25);
+    .choiceBtn.disabled{
+      opacity: 0.55;
+      cursor: default;
     }
+
     .smallRow{
       display:grid;
       grid-template-columns: 1fr auto auto;
@@ -289,6 +259,7 @@
     }
     .miniBtn:active{ transform: translateY(1px); }
 
+    /* オーバーレイ */
     .overlay{
       position:absolute;
       inset:0;
@@ -315,7 +286,7 @@
     .overlayCard .desc{
       font-size:12px;
       color:var(--muted);
-      line-height:1.5;
+      line-height:1.6;
       margin-bottom:14px;
     }
     .startBtn{
@@ -336,57 +307,51 @@
 
 <body>
   <div class="app">
-    <header class="hud" aria-label="状態">
+    <header class="hud">
       <div class="hudLeft">
-        <div class="title">送り仮名 落ちゲー</div>
-        <div class="sub">左右スワイプで移動／下の候補タップでもOK</div>
+        <div class="title">送り仮名 落ちゲー（簡単）</div>
+        <div class="sub">落ち切る前に「正しいかな」をタップ</div>
       </div>
       <div class="hudRight">
         <div class="row">SCORE<b id="scoreTxt">0</b></div>
-        <div class="row">COMBO<b id="comboTxt">0</b></div>
+        <div class="row">STREAK<b id="streakTxt">0</b></div>
         <div class="row">LIFE<b id="lifeTxt">3</b></div>
       </div>
     </header>
 
-    <main class="field" id="field" aria-label="フィールド">
-      <div class="laneLine" id="lane1"></div>
-      <div class="laneLine" id="lane2"></div>
+    <main class="field" id="field">
       <div class="catchLine"></div>
-      <div class="catchLabel">ここで判定</div>
+      <div class="catchLabel">ここまでに答える</div>
 
       <div class="toast" id="toast"></div>
 
       <div class="falling" id="falling">
         <div class="card">
           <div class="qText" id="qText">　</div>
-          <div class="qHint" id="qHint">正しい送り仮名のレーンへ</div>
+          <div class="qHint" id="qHint">下の答えをタップ</div>
         </div>
-      </div>
-
-      <div class="player" id="player">
-        <div class="playerInner">受ける</div>
       </div>
 
       <div class="overlay" id="overlay">
         <div class="overlayCard">
           <div class="big" id="overlayTitle">スタート</div>
           <div class="desc" id="overlayDesc">
-            上から落ちる問題に対して、下の3候補から正しい送り仮名を選び、<br/>
-            そのレーンで受けると正解です。
+            問題が落ち切る前に、下の3択から正しい送り仮名をタップしてください。<br/>
+            間違い or 時間切れでライフが減ります。
           </div>
           <button class="startBtn" id="startBtn">開始</button>
         </div>
       </div>
     </main>
 
-    <footer class="choices" aria-label="選択肢">
+    <footer class="choices">
       <div class="choiceRow">
         <button class="choiceBtn" id="c0">-</button>
         <button class="choiceBtn" id="c1">-</button>
         <button class="choiceBtn" id="c2">-</button>
       </div>
       <div class="smallRow">
-        <div class="chip" id="statusChip">速度: 1.0x（徐々に上がります）</div>
+        <div class="chip" id="statusChip">速度: ゆっくり</div>
         <button class="miniBtn" id="pauseBtn">一時停止</button>
         <button class="miniBtn" id="resetBtn">リセット</button>
       </div>
@@ -394,39 +359,31 @@
   </div>
 
   <script>
-    /* [JS-01] 出題データ（空欄【】に入る送り仮名。難しい語幹込みは避け、まずは単純な形に寄せる） */
+    /* 出題（まずは分かりやすいものだけ） */
     var QUESTIONS = [
       { display: "取【】", correct: "る", wrong: ["り","れ"] },
-      { display: "使【】", correct: "う", wrong: ["い","え"] },
-      { display: "動【】", correct: "く", wrong: ["き","け"] },
-      { display: "落【】る", correct: "ち", wrong: ["と","つ"] },
-      { display: "押【】す", correct: "し", wrong: ["す","せ"] },
-      { display: "返【】す", correct: "し", wrong: ["す","せ"] },
-      { display: "泳【】ぐ", correct: "ぐ", wrong: ["く","げ"] },
-      { display: "急【】ぐ", correct: "ぐ", wrong: ["く","げ"] },
-      { display: "続【】く", correct: "く", wrong: ["き","け"] },
-      { display: "開【】く", correct: "く", wrong: ["き","け"] },
-      { display: "閉【】じる", correct: "じ", wrong: ["ぢ","し"] },
-      { display: "信【】じる", correct: "じ", wrong: ["ぢ","し"] },
-      { display: "選【】ぶ", correct: "ぶ", wrong: ["ぷ","べ"] },
-      { display: "遊【】ぶ", correct: "ぶ", wrong: ["ぷ","べ"] }
+      { display: "見【】る", correct: "み", wrong: ["め","も"] },     // みる
+      { display: "書【】く", correct: "か", wrong: ["き","け"] },     // かく
+      { display: "読【】む", correct: "よ", wrong: ["ゆ","や"] },     // よむ
+      { display: "走【】る", correct: "はし", wrong: ["はす","はさ"] }, // はしる
+      { display: "待【】つ", correct: "ま", wrong: ["み","む"] },     // まつ
+      { display: "立【】つ", correct: "た", wrong: ["ち","つ"] },     // たつ
+      { display: "話【】す", correct: "はな", wrong: ["はね","はの"] }, // はなす
+      { display: "洗【】う", correct: "あら", wrong: ["あれ","あろ"] }, // あらう
+      { display: "選【】ぶ", correct: "えら", wrong: ["える","えろ"] }  // えらぶ
     ];
 
-    /* [JS-02] DOM */
     var field = document.getElementById("field");
-    var lane1 = document.getElementById("lane1");
-    var lane2 = document.getElementById("lane2");
-    var player = document.getElementById("player");
     var falling = document.getElementById("falling");
     var qText = document.getElementById("qText");
 
     var c0 = document.getElementById("c0");
     var c1 = document.getElementById("c1");
     var c2 = document.getElementById("c2");
-    var choiceBtns = [c0, c1, c2];
+    var btns = [c0, c1, c2];
 
     var scoreTxt = document.getElementById("scoreTxt");
-    var comboTxt = document.getElementById("comboTxt");
+    var streakTxt = document.getElementById("streakTxt");
     var lifeTxt = document.getElementById("lifeTxt");
     var statusChip = document.getElementById("statusChip");
 
@@ -440,27 +397,25 @@
     var pauseBtn = document.getElementById("pauseBtn");
     var resetBtn = document.getElementById("resetBtn");
 
-    /* [JS-03] ゲーム状態 */
-    var laneIndex = 1;       // 0,1,2
-    var correctLane = 1;     // 今回の正解レーン
     var score = 0;
-    var combo = 0;
+    var streak = 0;
     var life = 3;
 
     var running = false;
     var paused = false;
+    var answered = false;
 
-    var fallY = 0;
-    var baseSpeed = 2.2;     // px/frame 目安（端末で変動するので後でdt対応しても良い）
-    var speedMul = 1.0;
+    var fallY = -60;
+    var catchY = 0;
 
-    var catchY = 0;          // 判定Y（field内座標）
+    // 速度（簡単版は固定でゆっくり）
+    var speed = 2.0; // px/frame
+
+    var correct = "";
     var lastFrame = 0;
 
-    /* [JS-04] ユーティリティ */
-    function randInt(n){
-      return Math.floor(Math.random() * n);
-    }
+    function randInt(n){ return Math.floor(Math.random() * n); }
+
     function shuffle(arr){
       var a = arr.slice();
       for (var i = a.length - 1; i > 0; i--){
@@ -469,109 +424,80 @@
       }
       return a;
     }
-    function clamp(v, mn, mx){
-      return Math.max(mn, Math.min(mx, v));
+
+    function showToast(text, ok){
+      toast.textContent = text;
+      toast.className = "toast " + (ok ? "ok" : "ng") + " show";
+      setTimeout(function(){ toast.className = "toast"; }, 880);
     }
 
-    /* [JS-05] レーンの見た目配置 */
-    function layoutLanes(){
-      // fieldの幅に対して 1/3, 2/3 の位置に縦線
-      var w = field.clientWidth;
-      lane1.style.left = Math.floor(w / 3) + "px";
-      lane2.style.left = Math.floor((w * 2) / 3) + "px";
-
-      // catchY を計算（playerのbottomが92px固定なので、field高さから引く）
-      // playerは bottom:92px で配置。判定はその少し上（プレイヤー中央付近）
-      var h = field.clientHeight;
-      // playerのtop = h - 92 - 46
-      var playerTop = h - 92 - 46;
-      catchY = playerTop + 20; // プレイヤーの少し上寄りで判定
-
-      applyLane();
-    }
-
-    /* [JS-06] レーン反映（player位置とボタン強調） */
-    function applyLane(){
-      laneIndex = clamp(laneIndex, 0, 2);
-
-      // playerの left を 0/33.333/66.666 へ
-      var leftPercent = (laneIndex * (100 / 3));
-      player.style.left = leftPercent + "%";
-
-      for (var i = 0; i < 3; i++){
-        if (i === laneIndex){
-          choiceBtns[i].className = "choiceBtn active";
+    function setButtonsEnabled(on){
+      for (var i=0;i<btns.length;i++){
+        if (on){
+          btns[i].className = "choiceBtn";
+          btns[i].disabled = false;
         } else {
-          choiceBtns[i].className = "choiceBtn";
+          btns[i].className = "choiceBtn disabled";
+          btns[i].disabled = true;
         }
       }
     }
 
-    /* [JS-07] トースト表示 */
-    function showToast(text, ok){
-      toast.textContent = text;
-      toast.className = "toast " + (ok ? "ok" : "ng") + " show";
-      // 再発火用にclassを戻す（アニメを確実に再生）
-      setTimeout(function(){
-        toast.className = "toast";
-      }, 920);
-    }
-
-    /* [JS-08] UI更新 */
     function renderHud(){
       scoreTxt.textContent = String(score);
-      comboTxt.textContent = String(combo);
+      streakTxt.textContent = String(streak);
       lifeTxt.textContent = String(life);
-      statusChip.textContent = "速度: " + speedMul.toFixed(1) + "x（徐々に上がります）";
+      statusChip.textContent = "速度: ゆっくり";
       pauseBtn.textContent = paused ? "再開" : "一時停止";
     }
 
-    /* [JS-09] 問題生成（3候補を3レーンに割当） */
-    function spawnQuestion(){
+    function layout(){
+      // 判定ライン: bottom 112px → field内のY座標に変換
+      // fallingのカードがこのYを超えたらタイムアウト扱い
+      var h = field.clientHeight;
+      catchY = h - 112 - 40; // ざっくり中央基準（カード高さの半分程度）
+    }
+
+    function spawn(){
       var q = QUESTIONS[randInt(QUESTIONS.length)];
+      correct = q.correct;
 
-      // 3候補: correct + wrong2 をシャッフルしてレーンに割り当て
-      var options = [q.correct, q.wrong[0], q.wrong[1]];
-      options = shuffle(options);
-
+      var opts = shuffle([q.correct, q.wrong[0], q.wrong[1]]);
       qText.textContent = q.display;
 
-      c0.textContent = options[0];
-      c1.textContent = options[1];
-      c2.textContent = options[2];
+      c0.textContent = opts[0];
+      c1.textContent = opts[1];
+      c2.textContent = opts[2];
 
-      // 正解レーンを特定
-      correctLane = 0;
-      if (options[1] === q.correct) correctLane = 1;
-      if (options[2] === q.correct) correctLane = 2;
-
-      // 落下位置リセット（上から）
-      fallY = -30;
+      fallY = -60;
       falling.style.top = fallY + "px";
 
+      answered = false;
+      setButtonsEnabled(true);
       renderHud();
     }
 
-    /* [JS-10] 判定 */
-    function judge(){
-      var ok = (laneIndex === correctLane);
+    function nextAfter(ms){
+      setButtonsEnabled(false);
+      setTimeout(function(){
+        if (!running) return;
+        spawn();
+      }, ms);
+    }
 
-      if (ok){
-        combo += 1;
-        // スコア: 基本 + コンボ倍率
-        var gain = 10 + Math.min(40, combo * 2);
+    function judge(tapped){
+      if (!running || paused || answered) return;
+      answered = true;
+
+      if (tapped === correct){
+        streak += 1;
+        var gain = 10 + Math.min(20, streak); // 連続でちょい増し
         score += gain;
         showToast("正解 +" + gain, true);
-
-        // 徐々に速度アップ
-        if (combo % 3 === 0){
-          speedMul = Math.min(3.5, speedMul + 0.1);
-        }
       } else {
+        streak = 0;
         life -= 1;
-        combo = 0;
         showToast("不正解 -1", false);
-        speedMul = Math.max(1.0, speedMul - 0.1);
       }
 
       renderHud();
@@ -581,57 +507,60 @@
         return;
       }
 
-      spawnQuestion();
+      nextAfter(420);
     }
 
-    /* [JS-11] ループ */
+    function timeout(){
+      if (!running || paused || answered) return;
+      answered = true;
+      streak = 0;
+      life -= 1;
+      showToast("時間切れ -1", false);
+      renderHud();
+
+      if (life <= 0){
+        gameOver();
+        return;
+      }
+      nextAfter(420);
+    }
+
     function loop(ts){
       if (!running) return;
-
       if (!lastFrame) lastFrame = ts;
-      // dtは使わず、固定増分で軽量に（Edge95・簡潔重視）
       lastFrame = ts;
 
-      if (!paused){
-        fallY += baseSpeed * speedMul;
+      if (!paused && !answered){
+        fallY += speed;
         falling.style.top = fallY + "px";
-
         if (fallY >= catchY){
-          judge();
+          timeout();
         }
       }
-
       requestAnimationFrame(loop);
     }
 
-    /* [JS-12] 開始・停止 */
-    function startGame(){
+    function start(){
       score = 0;
-      combo = 0;
+      streak = 0;
       life = 3;
-      speedMul = 1.0;
-      laneIndex = 1;
-      applyLane();
-      renderHud();
-
       paused = false;
       running = true;
-
       overlay.style.display = "none";
-
-      spawnQuestion();
       lastFrame = 0;
+
+      layout();
+      spawn();
       requestAnimationFrame(loop);
     }
 
     function gameOver(){
       running = false;
       paused = false;
-      renderHud();
+      setButtonsEnabled(false);
 
       overlayTitle.textContent = "ゲームオーバー";
-      overlayDesc.innerHTML =
-        "SCORE: <b>" + score + "</b><br/>もう一度やる場合は開始を押してください。";
+      overlayDesc.innerHTML = "SCORE: <b>" + score + "</b><br/>もう一度やる場合は開始を押してください。";
       startBtn.textContent = "もう一度";
       overlay.style.display = "grid";
     }
@@ -639,84 +568,50 @@
     function resetAll(){
       running = false;
       paused = false;
+      answered = false;
+      setButtonsEnabled(false);
+
       overlayTitle.textContent = "スタート";
       overlayDesc.innerHTML =
-        "上から落ちる問題に対して、下の3候補から正しい送り仮名を選び、<br/>そのレーンで受けると正解です。";
+        "問題が落ち切る前に、下の3択から正しい送り仮名をタップしてください。<br/>間違い or 時間切れでライフが減ります。";
       startBtn.textContent = "開始";
       overlay.style.display = "grid";
 
-      // 見た目を初期化
       qText.textContent = "　";
       c0.textContent = "-"; c1.textContent = "-"; c2.textContent = "-";
-      fallY = -30; falling.style.top = fallY + "px";
-      score = 0; combo = 0; life = 3; speedMul = 1.0; laneIndex = 1;
-      applyLane();
+      fallY = -60; falling.style.top = fallY + "px";
+
+      score = 0; streak = 0; life = 3;
       renderHud();
     }
 
-    /* [JS-13] 入力 */
-    // ボタンタップ: そのレーンへ移動
-    choiceBtns[0].addEventListener("click", function(){ laneIndex = 0; applyLane(); });
-    choiceBtns[1].addEventListener("click", function(){ laneIndex = 1; applyLane(); });
-    choiceBtns[2].addEventListener("click", function(){ laneIndex = 2; applyLane(); });
+    // 入力：3択タップのみ
+    c0.addEventListener("click", function(){ judge(c0.textContent); });
+    c1.addEventListener("click", function(){ judge(c1.textContent); });
+    c2.addEventListener("click", function(){ judge(c2.textContent); });
 
-    // スワイプ: 左右移動
-    var touchStartX = 0;
-    var touchStartY = 0;
-
-    field.addEventListener("touchstart", function(e){
-      if (!e.touches || e.touches.length === 0) return;
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    field.addEventListener("touchend", function(e){
-      // touchendは changedTouches
-      if (!e.changedTouches || e.changedTouches.length === 0) return;
-      var endX = e.changedTouches[0].clientX;
-      var endY = e.changedTouches[0].clientY;
-
-      var dx = endX - touchStartX;
-      var dy = endY - touchStartY;
-
-      // 横スワイプ判定（縦より横が強い & しきい値）
-      if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)){
-        if (dx > 0) laneIndex += 1;
-        else laneIndex -= 1;
-        applyLane();
-      }
-    }, { passive: true });
-
-    // 一時停止
     pauseBtn.addEventListener("click", function(){
       if (!running) return;
       paused = !paused;
       renderHud();
     });
 
-    // リセット
     resetBtn.addEventListener("click", function(){
       resetAll();
     });
 
-    // 開始
     startBtn.addEventListener("click", function(){
-      startGame();
+      start();
     });
 
-    // 画面リサイズ対応
     window.addEventListener("resize", function(){
-      layoutLanes();
+      layout();
     });
 
-    /* [JS-14] 初期化 */
-    function init(){
-      layoutLanes();
-      applyLane();
-      renderHud();
-      // overlayは最初に表示されている
-    }
-    init();
+    // 初期化
+    layout();
+    setButtonsEnabled(false);
+    renderHud();
   </script>
 </body>
 </html>
