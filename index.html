@@ -1,449 +1,406 @@
 <!--
-[JST 2026-01-03 17:00]  milk_bottle_game_ui_design.html
-目的: スマホ向けUIデザイン（画像なし / 牛乳瓶が右→中央で停止 / ボタンで上から牛乳が出る見た目）
-※ これは「デザイン先行版（UIモック）」です。ゲームの判定ロジックは最小限のデモに留めています。
+[JST 2026-01-03 17:00]  okurigana_fall_game_single.html
+スマホ向け・画像なし・送り仮名×落ちゲー（3レーン）
+操作:
+  - 画面を左右スワイプ: レーン移動
+  - 下の3つの選択肢ボタンをタップ: そのレーンへ移動
+ルール:
+  - 上から「漢字＋空欄」が落ちてくる
+  - 下の3レーンに表示された候補（かな）から、正しい送り仮名のレーンに入って受ける
+  - 正解でスコア/コンボ、誤答でライフ減。ライフ0でゲームオーバー
 -->
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>牛乳瓶ゲーム（UIデザイン）</title>
+  <title>送り仮名 落ちゲー</title>
   <style>
-    /* [01] ベース */
+    /* [CSS-01] ベース */
     :root{
-      --bg: #0f1220;
-      --panel: rgba(255,255,255,0.06);
-      --panel2: rgba(255,255,255,0.10);
-      --text: rgba(255,255,255,0.92);
-      --muted: rgba(255,255,255,0.65);
-      --line: rgba(255,255,255,0.22);
-      --accent: rgba(120, 170, 255, 0.95);
-      --danger: rgba(255, 90, 120, 0.95);
-      --milk: rgba(245, 245, 245, 0.95);
-
-      --safe-area-top: env(safe-area-inset-top, 0px);
-      --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-
-      /* スマホでの見た目調整 */
-      --ui-radius: 16px;
-      --btn-radius: 18px;
-      --shadow: 0 16px 50px rgba(0,0,0,0.35);
+      --bg:#0e1326;
+      --panel:rgba(255,255,255,0.06);
+      --panel2:rgba(255,255,255,0.10);
+      --line:rgba(255,255,255,0.18);
+      --text:rgba(255,255,255,0.92);
+      --muted:rgba(255,255,255,0.68);
+      --ok:rgba(120,170,255,0.95);
+      --ng:rgba(255,90,120,0.95);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --radius:16px;
+      --btnRadius:18px;
+      --shadow: 0 18px 55px rgba(0,0,0,0.35);
     }
-
     html, body{
-      height: 100%;
-      margin: 0;
-      background: radial-gradient(1200px 700px at 20% 10%, rgba(90,120,255,0.15), transparent 55%),
-                  radial-gradient(900px 600px at 90% 25%, rgba(255,90,120,0.10), transparent 55%),
-                  var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
+      height:100%;
+      margin:0;
+      background:
+        radial-gradient(1000px 600px at 20% 10%, rgba(120,170,255,0.14), transparent 55%),
+        radial-gradient(900px 600px at 90% 25%, rgba(255,90,120,0.10), transparent 55%),
+        var(--bg);
+      color:var(--text);
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
       -webkit-tap-highlight-color: transparent;
       overscroll-behavior: none;
+      user-select:none;
     }
 
-    /* [02] 画面レイアウト（上:状態 / 中:プレイフィールド / 下:操作） */
+    /* [CSS-02] レイアウト（上:HUD / 中:フィールド / 下:選択肢） */
     .app{
-      height: 100%;
-      display: grid;
+      height:100%;
+      display:grid;
       grid-template-rows: auto 1fr auto;
-      padding-top: calc(10px + var(--safe-area-top));
-      padding-bottom: calc(10px + var(--safe-area-bottom));
-      gap: 10px;
+      gap:10px;
+      padding-top: calc(10px + var(--safe-top));
+      padding-bottom: calc(10px + var(--safe-bottom));
     }
 
-    .topbar{
-      margin: 0 12px;
-      padding: 12px 12px;
-      border-radius: var(--ui-radius);
+    .hud{
+      margin:0 12px;
+      padding:12px 12px;
+      border-radius: var(--radius);
       background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border:1px solid rgba(255,255,255,0.08);
       box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: grid;
+      display:grid;
       grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 12px;
+      align-items:center;
+      gap:10px;
     }
-    .title{
-      line-height: 1.2;
+    .hudLeft .title{
+      font-size:15px;
+      font-weight:800;
+      letter-spacing:0.3px;
+      line-height:1.2;
     }
-    .title .main{
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      font-size: 16px;
+    .hudLeft .sub{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.2;
     }
-    .title .sub{
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .stat{
-      display: grid;
-      gap: 6px;
-      text-align: right;
+    .hudRight{
+      display:grid;
+      gap:6px;
+      text-align:right;
       font-variant-numeric: tabular-nums;
     }
-    .stat .label{
-      font-size: 11px;
-      color: var(--muted);
+    .hudRight .row{
+      font-size:12px;
+      color:var(--muted);
     }
-    .stat .value{
-      font-size: 14px;
-      font-weight: 700;
+    .hudRight .row b{
+      color:var(--text);
+      font-size:14px;
+      margin-left:8px;
+      font-weight:900;
     }
 
-    /* [03] プレイフィールド（中央に瓶が止まる） */
     .field{
-      margin: 0 12px;
-      border-radius: var(--ui-radius);
+      margin:0 12px;
+      border-radius: var(--radius);
       background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-      border: 1px solid rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.08);
       box-shadow: var(--shadow);
-      position: relative;
-      overflow: hidden;
+      position:relative;
+      overflow:hidden;
       min-height: 380px;
     }
 
-    /* 上部中央: 牛乳の出口（ノズル） */
-    .nozzle-wrap{
-      position: absolute;
-      left: 50%;
+    /* 3レーンの境界線（見た目） */
+    .laneLine{
+      position:absolute;
+      top:0; bottom:0;
+      width:1px;
+      background: rgba(255,255,255,0.10);
+      pointer-events:none;
+    }
+
+    /* キャッチライン */
+    .catchLine{
+      position:absolute;
+      left:0; right:0;
+      height:2px;
+      background: rgba(120,170,255,0.35);
+      bottom: 92px; /* 下部ボタンの上に合わせる */
+      pointer-events:none;
+    }
+    .catchLabel{
+      position:absolute;
+      right:10px;
+      bottom: calc(92px + 8px);
+      font-size:11px;
+      color: rgba(120,170,255,0.9);
+      background: rgba(0,0,0,0.20);
+      border:1px solid rgba(120,170,255,0.25);
+      padding:4px 8px;
+      border-radius:999px;
+      pointer-events:none;
+    }
+
+    /* 落下問題（文字ブロック） */
+    .falling{
+      position:absolute;
+      top:0;
+      width: 30%;
+      left: 35%;
+      transform: translateX(0);
+      text-align:center;
+      pointer-events:none;
+    }
+    .card{
+      display:inline-grid;
+      gap:6px;
+      padding:12px 10px;
+      border-radius:14px;
+      background: rgba(0,0,0,0.22);
+      border:1px solid rgba(255,255,255,0.12);
+      backdrop-filter: blur(4px);
+    }
+    .qText{
+      font-size:30px;
+      font-weight:900;
+      letter-spacing:1px;
+      line-height:1.0;
+    }
+    .qHint{
+      font-size:11px;
+      color:var(--muted);
+      letter-spacing:0.2px;
+    }
+
+    /* プレイヤー（下部の受け位置） */
+    .player{
+      position:absolute;
+      bottom: 92px; /* キャッチライン位置に合わせる */
+      width: 30%;
+      height: 46px;
+      left: 35%;
+      display:grid;
+      place-items:center;
+      pointer-events:none;
+    }
+    .playerInner{
+      width: 78%;
+      height: 34px;
+      border-radius: 999px;
+      background: rgba(120,170,255,0.16);
+      border: 1px solid rgba(120,170,255,0.35);
+      box-shadow: 0 12px 30px rgba(120,170,255,0.10);
+      display:grid;
+      place-items:center;
+      font-weight:900;
+      letter-spacing:0.3px;
+      color: rgba(210,230,255,0.95);
+      font-size: 13px;
+    }
+
+    /* フィードバック（正解/不正解） */
+    .toast{
+      position:absolute;
+      left:50%;
       top: 14px;
       transform: translateX(-50%);
-      display: grid;
-      justify-items: center;
-      gap: 8px;
-      z-index: 5;
-      pointer-events: none; /* 見た目だけ */
-    }
-    .nozzle{
-      width: 70px;
-      height: 22px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.18);
-      position: relative;
-    }
-    .nozzle:before{
-      content:"";
-      position:absolute;
-      left: 50%;
-      top: 100%;
-      transform: translateX(-50%);
-      width: 18px;
-      height: 10px;
-      border-radius: 0 0 10px 10px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(255,255,255,0.18);
-      border-top: none;
-    }
-    .hint{
-      font-size: 11px;
-      color: var(--muted);
+      padding:10px 14px;
+      border-radius:999px;
       background: rgba(0,0,0,0.22);
-      border: 1px solid rgba(255,255,255,0.10);
-      padding: 6px 10px;
-      border-radius: 999px;
+      border:1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      font-size:13px;
+      font-weight:900;
+      opacity:0;
+      pointer-events:none;
     }
-
-    /* 牛乳の流れ（ボタン押下で表示される想定） */
-    .milk-stream{
-      position: absolute;
-      left: 50%;
-      top: 46px;
-      transform: translateX(-50%);
-      width: 16px;
-      height: 0px; /* JSで伸ばす */
-      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.70));
-      border-radius: 999px;
-      filter: drop-shadow(0 10px 18px rgba(255,255,255,0.08));
-      opacity: 0;
-      z-index: 4;
+    .toast.show{
+      opacity:1;
+      animation: toastFade 900ms ease-out forwards;
     }
-
-    /* [04] 牛乳瓶（画像無し: CSSで瓶を描く） */
-    .bottle{
-      position: absolute;
-      top: 120px;
-      /* left はJSで動かす（右→中央） */
-      width: min(180px, 52vw);
-      height: min(320px, 58vh);
-      z-index: 3;
-      transform: translateX(-50%);
-      pointer-events: none;
+    .toast.ok{
+      border-color: rgba(120,170,255,0.35);
+      background: rgba(120,170,255,0.14);
     }
-
-    .bottle-outline{
-      position: absolute;
-      inset: 0;
-      border-radius: 26px 26px 30px 30px;
-      border: 2px solid rgba(255,255,255,0.55);
-      background: rgba(255,255,255,0.05);
-      box-shadow:
-        inset 0 0 0 1px rgba(255,255,255,0.10),
-        0 20px 40px rgba(0,0,0,0.30);
-      overflow: hidden;
-    }
-
-    /* 首（ネック） */
-    .bottle-neck{
-      position: absolute;
-      left: 50%;
-      top: -26px;
-      transform: translateX(-50%);
-      width: 46%;
-      height: 58px;
-      border-radius: 18px 18px 16px 16px;
-      border: 2px solid rgba(255,255,255,0.55);
-      background: rgba(255,255,255,0.04);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
-    }
-
-    /* 口（開口） */
-    .bottle-mouth{
-      position: absolute;
-      left: 50%;
-      top: -36px;
-      transform: translateX(-50%);
-      width: 56%;
-      height: 18px;
-      border-radius: 999px;
-      border: 2px solid rgba(255,255,255,0.55);
-      background: rgba(0,0,0,0.25);
-    }
-
-    /* 中身（牛乳の充填レベル） */
-    .milk-fill{
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 0%; /* JSで増減（デザインモックでは表示可能） */
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(240,240,240,0.80));
-    }
-    .milk-fill:before{
-      /* ミルク表面のゆらぎ（見た目） */
-      content:"";
-      position:absolute;
-      left:-20%;
-      top:-8px;
-      width:140%;
-      height: 18px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.55);
-      filter: blur(2px);
-      opacity: 0.55;
-    }
-
-    /* 目標ライン: 90% */
-    .target-line{
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 90%;
-      border-top: 2px dashed rgba(120,170,255,0.9);
-      opacity: 0.95;
-    }
-    .target-label{
-      position: absolute;
-      right: 10px;
-      bottom: calc(90% + 6px);
-      font-size: 11px;
-      color: rgba(120,170,255,0.95);
-      background: rgba(0,0,0,0.22);
-      border: 1px solid rgba(120,170,255,0.30);
-      padding: 4px 8px;
-      border-radius: 999px;
-    }
-
-    /* オーバーフロー演出（文字だけで表現） */
-    .overflow{
-      position: absolute;
-      left: 50%;
-      top: 66px;
-      transform: translateX(-50%);
-      padding: 10px 14px;
-      border-radius: 999px;
+    .toast.ng{
+      border-color: rgba(255,90,120,0.35);
       background: rgba(255,90,120,0.14);
-      border: 1px solid rgba(255,90,120,0.35);
-      color: rgba(255,200,210,0.98);
-      font-weight: 700;
-      letter-spacing: 0.4px;
-      opacity: 0;
-      z-index: 6;
     }
-    .overflow.show{
-      animation: pop 900ms ease-out forwards;
-    }
-    @keyframes pop{
-      0%{ opacity:0; transform: translateX(-50%) translateY(6px) scale(0.98); }
-      25%{ opacity:1; transform: translateX(-50%) translateY(0px) scale(1.02); }
-      100%{ opacity:0; transform: translateX(-50%) translateY(-10px) scale(1.00); }
+    @keyframes toastFade{
+      0%{ transform: translateX(-50%) translateY(6px); opacity:0; }
+      20%{ transform: translateX(-50%) translateY(0px); opacity:1; }
+      100%{ transform: translateX(-50%) translateY(-10px); opacity:0; }
     }
 
-    /* 成功演出（デザイン枠） */
-    .success{
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      background: rgba(0,0,0,0.40);
-      opacity: 0;
-      pointer-events: none;
-      z-index: 10;
-    }
-    .success.show{
-      opacity: 1;
-    }
-    .success-card{
-      width: min(320px, 86%);
-      border-radius: 18px;
-      padding: 18px 16px;
-      background: linear-gradient(180deg, rgba(120,170,255,0.20), rgba(255,255,255,0.06));
-      border: 1px solid rgba(255,255,255,0.14);
-      box-shadow: 0 30px 90px rgba(0,0,0,0.55);
-      text-align: center;
-    }
-    .success-card .big{
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.6px;
-      margin-bottom: 6px;
-    }
-    .success-card .small{
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    /* [05] 下部コントロール */
-    .controls{
-      margin: 0 12px;
-      padding: 12px;
-      border-radius: var(--ui-radius);
+    /* 下部: 3レーン選択肢 */
+    .choices{
+      margin:0 12px;
+      padding:12px;
+      border-radius: var(--radius);
       background: linear-gradient(180deg, var(--panel2), var(--panel));
+      border:1px solid rgba(255,255,255,0.08);
       box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,0.08);
-      display: grid;
-      gap: 10px;
+      display:grid;
+      gap:10px;
     }
-
-    .btn{
-      width: 100%;
-      border: none;
-      border-radius: var(--btn-radius);
-      padding: 16px 14px;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      color: rgba(255,255,255,0.95);
-      background: linear-gradient(180deg, rgba(120,170,255,0.95), rgba(80,120,255,0.80));
-      box-shadow: 0 14px 30px rgba(80,120,255,0.20);
-      cursor: pointer;
+    .choiceRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap:10px;
     }
-    .btn:active{
+    .choiceBtn{
+      border:none;
+      border-radius: var(--btnRadius);
+      padding:16px 8px;
+      background: rgba(255,255,255,0.10);
+      border:1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      font-size:22px;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+    }
+    .choiceBtn:active{
       transform: translateY(1px);
       filter: brightness(0.98);
     }
-
-    .row{
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
+    .choiceBtn.active{
+      outline: 2px solid rgba(120,170,255,0.55);
+      background: rgba(120,170,255,0.18);
+      border-color: rgba(120,170,255,0.25);
+    }
+    .smallRow{
+      display:grid;
+      grid-template-columns: 1fr auto auto;
+      gap:10px;
+      align-items:center;
     }
     .chip{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      border-radius: 999px;
+      font-size:12px;
+      color:var(--muted);
+      padding:10px 12px;
+      border-radius:999px;
       background: rgba(0,0,0,0.18);
-      border: 1px solid rgba(255,255,255,0.10);
-      color: var(--muted);
-      font-size: 12px;
+      border:1px solid rgba(255,255,255,0.10);
     }
-    .mini{
-      border: none;
-      border-radius: 999px;
-      padding: 10px 12px;
+    .miniBtn{
+      border:none;
+      border-radius:999px;
+      padding:10px 12px;
       background: rgba(255,255,255,0.10);
-      color: rgba(255,255,255,0.90);
-      font-weight: 700;
-      cursor: pointer;
+      border:1px solid rgba(255,255,255,0.10);
+      color: var(--text);
+      font-weight:800;
+      cursor:pointer;
     }
-    .mini:active{
-      transform: translateY(1px);
-      filter: brightness(0.98);
-    }
+    .miniBtn:active{ transform: translateY(1px); }
 
-    /* [06] 小さな画面向け */
-    @media (max-height: 700px){
-      .field{ min-height: 340px; }
-      .bottle{ top: 108px; }
+    /* オーバーレイ（開始/ゲームオーバー） */
+    .overlay{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      background: rgba(0,0,0,0.45);
+      z-index: 20;
     }
+    .overlayCard{
+      width:min(360px, 88%);
+      border-radius:18px;
+      padding:18px 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+      border:1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 30px 90px rgba(0,0,0,0.55);
+      text-align:center;
+    }
+    .overlayCard .big{
+      font-size:18px;
+      font-weight:900;
+      letter-spacing:0.4px;
+      margin-bottom:8px;
+    }
+    .overlayCard .desc{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.5;
+      margin-bottom:14px;
+    }
+    .startBtn{
+      width:100%;
+      border:none;
+      border-radius: 16px;
+      padding:14px 12px;
+      font-size:16px;
+      font-weight:900;
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(120,170,255,0.95), rgba(80,120,255,0.82));
+      box-shadow: 0 16px 34px rgba(80,120,255,0.22);
+      cursor:pointer;
+    }
+    .startBtn:active{ transform: translateY(1px); }
   </style>
 </head>
 
 <body>
   <div class="app">
 
-    <!-- [A] 上部: 状態表示（デザイン用） -->
-    <header class="topbar" aria-label="ゲーム状態">
-      <div class="title">
-        <div class="main">牛乳瓶チャレンジ（UIデザイン）</div>
-        <div class="sub">右→中央で瓶が停止 / ボタンで上から牛乳（見た目）</div>
+    <!-- [UI-01] 上部HUD -->
+    <header class="hud" aria-label="状態">
+      <div class="hudLeft">
+        <div class="title">送り仮名 落ちゲー</div>
+        <div class="sub">左右スワイプで移動／下の候補をタップでもOK</div>
       </div>
-      <div class="stat">
-        <div class="label">充填率（デモ）</div>
-        <div class="value" id="fillText">0%</div>
+      <div class="hudRight">
+        <div class="row">SCORE<b id="scoreTxt">0</b></div>
+        <div class="row">COMBO<b id="comboTxt">0</b></div>
+        <div class="row">LIFE<b id="lifeTxt">3</b></div>
       </div>
     </header>
 
-    <!-- [B] 中央: プレイフィールド -->
-    <main class="field" aria-label="プレイフィールド">
+    <!-- [UI-02] フィールド -->
+    <main class="field" id="field" aria-label="フィールド">
+      <div class="laneLine" id="lane1"></div>
+      <div class="laneLine" id="lane2"></div>
+      <div class="catchLine"></div>
+      <div class="catchLabel">ここで判定</div>
 
-      <!-- ノズル（上部中央） -->
-      <div class="nozzle-wrap">
-        <div class="nozzle" aria-hidden="true"></div>
-        <div class="hint">下のボタンで注ぐ（デザインモック）</div>
-      </div>
+      <div class="toast" id="toast"></div>
 
-      <!-- 牛乳の流れ -->
-      <div class="milk-stream" id="milkStream" aria-hidden="true"></div>
-
-      <!-- オーバーフロー表示 -->
-      <div class="overflow" id="overflowText">あふれた！</div>
-
-      <!-- 成功カード（デザイン枠） -->
-      <div class="success" id="successOverlay" aria-hidden="true">
-        <div class="success-card">
-          <div class="big">成功（デザイン表示）</div>
-          <div class="small">90%ぴったり付近に入れば成功、は次で判定します。</div>
+      <!-- 落下問題 -->
+      <div class="falling" id="falling">
+        <div class="card">
+          <div class="qText" id="qText">　</div>
+          <div class="qHint" id="qHint">正しい送り仮名のレーンへ</div>
         </div>
       </div>
 
-      <!-- 牛乳瓶本体（右から入って中央で止まる） -->
-      <div class="bottle" id="bottle" aria-hidden="true">
-        <div class="bottle-mouth"></div>
-        <div class="bottle-neck"></div>
-        <div class="bottle-outline">
-          <div class="milk-fill" id="milkFill"></div>
-          <div class="target-line"></div>
-          <div class="target-label">目標 90%</div>
-        </div>
+      <!-- プレイヤー -->
+      <div class="player" id="player">
+        <div class="playerInner">受ける</div>
       </div>
 
+      <!-- 開始/終了オーバーレイ -->
+      <div class="overlay" id="overlay">
+        <div class="overlayCard">
+          <div class="big" id="overlayTitle">スタート</div>
+          <div class="desc" id="overlayDesc">
+            上から落ちる問題に対して、下の3候補から正しい送り仮名を選び、<br/>
+            そのレーンで受けると正解です。
+          </div>
+          <button class="startBtn" id="startBtn">開始</button>
+        </div>
+      </div>
     </main>
 
-    <!-- [C] 下部: 操作 -->
-    <footer class="controls" aria-label="操作パネル">
-      <button class="btn" id="pourBtn">注ぐ</button>
-
-      <div class="row">
-        <div class="chip">デザイン版: 瓶移動・注ぐ見た目のみ</div>
-        <button class="mini" id="resetBtn">リセット</button>
+    <!-- [UI-03] 下部選択肢 -->
+    <footer class="choices" aria-label="選択肢">
+      <div class="choiceRow">
+        <button class="choiceBtn" id="c0">-</button>
+        <button class="choiceBtn" id="c1">-</button>
+        <button class="choiceBtn" id="c2">-</button>
+      </div>
+      <div class="smallRow">
+        <div class="chip" id="statusChip">速度: 1.0x（徐々に上がります）</div>
+        <button class="miniBtn" id="pauseBtn">一時停止</button>
+        <button class="miniBtn" id="resetBtn">リセット</button>
       </div>
     </footer>
 
@@ -451,142 +408,21 @@
 
   <script>
     /*
-      [JS-01] これはUIモック用の最小JSです。
-      - 瓶: 右から中央へ移動して停止
-      - ボタン: 牛乳の流れ表示 + 充填量が少し増える（デザイン確認用）
-      ※ 「90%に入れば成功」「多いと溢れる」の厳密判定ロジックは次のステップで実装します。
+      [JS-01] データ（送り仮名）
+      - display: 画面表示（空欄は【】）
+      - correct: 正解のかな（空欄に入る送り仮名）
+      - wrong: 誤答候補（2つ）
     */
-
-    // [JS-02] DOM参照
-    var bottleEl = document.getElementById("bottle");
-    var milkFillEl = document.getElementById("milkFill");
-    var fillTextEl = document.getElementById("fillText");
-    var milkStreamEl = document.getElementById("milkStream");
-    var overflowEl = document.getElementById("overflowText");
-    var successOverlayEl = document.getElementById("successOverlay");
-
-    var pourBtn = document.getElementById("pourBtn");
-    var resetBtn = document.getElementById("resetBtn");
-
-    // [JS-03] 状態（デモ）
-    var fill = 0;            // 0〜110（110は溢れ演出のために少し超える）
-    var isPouring = false;
-
-    // [JS-04] 瓶の初期位置（右外）→中央停止
-    function placeBottleAtPercentX(pxPercent){
-      // field内でのleftを%指定（transform: translateX(-50%)なので中心基準）
-      bottleEl.style.left = pxPercent + "%";
-    }
-
-    function animateBottleIn(){
-      // 右外（120%）→中央（50%）へ
-      var x = 120;
-      placeBottleAtPercentX(x);
-
-      function step(){
-        // 速度はデザイン確認向けに一定
-        x -= 2.6;
-        if (x <= 50){
-          x = 50;
-          placeBottleAtPercentX(x);
-          return; // 停止
-        }
-        placeBottleAtPercentX(x);
-        requestAnimationFrame(step);
-      }
-      requestAnimationFrame(step);
-    }
-
-    // [JS-05] 充填表示（デモ）
-    function renderFill(){
-      // 見た目は 0〜100%に丸める（溢れ判定表示のため内部fillは超える）
-      var visual = Math.max(0, Math.min(100, fill));
-      milkFillEl.style.height = visual + "%";
-      fillTextEl.textContent = visual + "%";
-    }
-
-    // [JS-06] 流れ表示（見た目）
-    function showStream(on){
-      if (on){
-        milkStreamEl.style.opacity = "1";
-        // 瓶の口まで伸ばす（フィールド上部→瓶の上あたり）
-        milkStreamEl.style.height = "210px";
-      } else {
-        milkStreamEl.style.opacity = "0";
-        milkStreamEl.style.height = "0px";
-      }
-    }
-
-    // [JS-07] 溢れ演出（見た目）
-    function showOverflow(){
-      overflowEl.className = "overflow show";
-      // classを戻す（再発火できるように）
-      setTimeout(function(){
-        overflowEl.className = "overflow";
-      }, 950);
-    }
-
-    // [JS-08] 成功表示（デザイン枠）
-    function showSuccessOverlay(on){
-      if (on){
-        successOverlayEl.className = "success show";
-        successOverlayEl.setAttribute("aria-hidden", "false");
-      } else {
-        successOverlayEl.className = "success";
-        successOverlayEl.setAttribute("aria-hidden", "true");
-      }
-    }
-
-    // [JS-09] 注ぐ（デザインデモ）
-    function pourOnce(){
-      if (isPouring) return;
-      isPouring = true;
-
-      showStream(true);
-
-      // デザイン確認用: 1回押すと少し増える
-      // 次ステップで「押しっぱなし」「流量」「停止タイミング」などに拡張可能
-      var add = 12; // 仮
-      fill += add;
-
-      // 溢れ（デザイン）
-      if (fill > 100){
-        showOverflow();
-      }
-
-      // 「成功」デザイン表示（仮）: 90%以上〜100%未満で出す（次で厳密化）
-      if (fill >= 90 && fill <= 100){
-        showSuccessOverlay(true);
-        // しばらく表示して消す
-        setTimeout(function(){ showSuccessOverlay(false); }, 900);
-      }
-
-      renderFill();
-
-      // 流れ停止（見た目）
-      setTimeout(function(){
-        showStream(false);
-        isPouring = false;
-      }, 260);
-    }
-
-    // [JS-10] リセット
-    function resetAll(){
-      fill = 0;
-      renderFill();
-      showStream(false);
-      showSuccessOverlay(false);
-      placeBottleAtPercentX(120);
-      animateBottleIn();
-    }
-
-    // [JS-11] イベント
-    pourBtn.addEventListener("click", pourOnce);
-    resetBtn.addEventListener("click", resetAll);
-
-    // [JS-12] 初期化
-    renderFill();
-    animateBottleIn();
-  </script>
-</body>
-</html>
+    var QUESTIONS = [
+      { display: "取【】", correct: "る", wrong: ["り","れ"] },
+      { display: "使【】", correct: "う", wrong: ["い","え"] },
+      { display: "動【】", correct: "く", wrong: ["き","け"] },
+      { display: "落【】る", correct: "ち", wrong: ["と","つ"] },
+      { display: "押【】す", correct: "し", wrong: ["す","せ"] },
+      { display: "返【】す", correct: "し", wrong: ["す","せ"] },
+      { display: "泳【】ぐ", correct: "ぎ", wrong: ["き","げ"] },
+      { display: "急【】ぐ", correct: "ぎ", wrong: ["き","げ"] },
+      { display: "続【】く", correct: "づ", wrong: ["つ","ず"] },
+      { display: "片【】ける", correct: "づ", wrong: ["つ","ず"] },
+      { display: "近【】い", correct: "ちか", wrong: ["ちけ","ちこ"] }, /* 例外的（語幹込み） */
+      { display: "明【】い", correct: "かる", wrong: ["か
