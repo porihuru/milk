@@ -1,19 +1,13 @@
 <!--
-[JST 2026-01-03 17:00]  okurigana_fall_game_easy_single.html
-送り仮名 × 落ちゲー（簡単版 / 3択タップのみ）
-操作:
-  - 下の3つの候補ボタンをタップするだけ（スワイプ・移動なし）
-ルール:
-  - 問題が上から落ちてくる
-  - 落ち切る前に正しい送り仮名（かな）をタップ → 正解
-  - 間違い or タイムアウト → ライフ-1
+[JST 2026-01-04 11:00]  kanji_fall_game_150q_big_randomonly.html
+漢字よみ × 落ちゲー（150問 / ランダム重複なし / 3択タップのみ）
 -->
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>送り仮名 落ちゲー（簡単）</title>
+  <title>漢字よみ 落ちゲー（150問・ランダム）</title>
   <style>
     :root{
       --bg:#0e1326;
@@ -21,14 +15,11 @@
       --panel2:rgba(255,255,255,0.10);
       --text:rgba(255,255,255,0.92);
       --muted:rgba(255,255,255,0.68);
-      --ok:rgba(120,170,255,0.95);
-      --ng:rgba(255,90,120,0.95);
-      --line:rgba(255,255,255,0.18);
+      --shadow: 0 18px 55px rgba(0,0,0,0.35);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --radius:16px;
-      --btnRadius:18px;
-      --shadow: 0 18px 55px rgba(0,0,0,0.35);
+      --radius:18px;
+      --btnRadius:20px;
     }
     html, body{
       height:100%;
@@ -43,20 +34,19 @@
       overscroll-behavior: none;
       user-select:none;
     }
-
     .app{
       height:100%;
       display:grid;
       grid-template-rows: auto 1fr auto;
-      gap:10px;
-      padding-top: calc(10px + var(--safe-top));
-      padding-bottom: calc(10px + var(--safe-bottom));
+      gap:12px;
+      padding-top: calc(12px + var(--safe-top));
+      padding-bottom: calc(12px + var(--safe-bottom));
     }
 
-    /* 上部HUD */
+    /* HUD */
     .hud{
       margin:0 12px;
-      padding:12px 12px;
+      padding:14px 14px;
       border-radius: var(--radius);
       background: linear-gradient(180deg, var(--panel2), var(--panel));
       border:1px solid rgba(255,255,255,0.08);
@@ -64,38 +54,38 @@
       display:grid;
       grid-template-columns: 1fr auto;
       align-items:center;
-      gap:10px;
+      gap:12px;
     }
     .hudLeft .title{
-      font-size:15px;
+      font-size:18px;
       font-weight:900;
       letter-spacing:0.3px;
       line-height:1.2;
     }
     .hudLeft .sub{
-      margin-top:4px;
-      font-size:12px;
+      margin-top:6px;
+      font-size:13px;
       color:var(--muted);
       line-height:1.2;
     }
     .hudRight{
       display:grid;
-      gap:6px;
+      gap:8px;
       text-align:right;
       font-variant-numeric: tabular-nums;
     }
     .hudRight .row{
-      font-size:12px;
+      font-size:13px;
       color:var(--muted);
     }
     .hudRight .row b{
       color:var(--text);
-      font-size:14px;
-      margin-left:8px;
+      font-size:18px;
+      margin-left:10px;
       font-weight:900;
     }
 
-    /* フィールド */
+    /* FIELD */
     .field{
       margin:0 12px;
       border-radius: var(--radius);
@@ -104,75 +94,76 @@
       box-shadow: var(--shadow);
       position:relative;
       overflow:hidden;
-      min-height: 380px;
+      min-height: 420px;
     }
 
-    /* タイムアウト判定ライン */
+    /* timeout line */
     .catchLine{
       position:absolute;
       left:0; right:0;
       height:2px;
-      background: rgba(255,255,255,0.10);
-      bottom: 112px;
+      background: rgba(255,255,255,0.12);
+      bottom: 124px;
       pointer-events:none;
     }
     .catchLabel{
       position:absolute;
       right:10px;
-      bottom: calc(112px + 8px);
-      font-size:11px;
+      bottom: calc(124px + 10px);
+      font-size:12px;
       color: var(--muted);
-      background: rgba(0,0,0,0.20);
+      background: rgba(0,0,0,0.22);
       border:1px solid rgba(255,255,255,0.10);
-      padding:4px 8px;
+      padding:5px 9px;
       border-radius:999px;
       pointer-events:none;
     }
 
-    /* 落下する問題カード */
+    /* falling card */
     .falling{
       position:absolute;
       left:50%;
       transform: translateX(-50%);
-      top: -60px;
+      top: -90px;
       text-align:center;
       pointer-events:none;
       z-index: 5;
     }
     .card{
       display:inline-grid;
-      gap:8px;
-      padding:14px 12px;
-      border-radius:16px;
-      background: rgba(0,0,0,0.24);
-      border:1px solid rgba(255,255,255,0.14);
+      gap:10px;
+      padding:18px 16px;
+      border-radius:18px;
+      background: rgba(0,0,0,0.26);
+      border:1px solid rgba(255,255,255,0.16);
       box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+      min-width: 260px;
     }
     .qText{
-      font-size:34px;
+      font-size:64px;     /* ★さらに大きく */
       font-weight:900;
-      letter-spacing:1px;
+      letter-spacing:2px;
       line-height:1.0;
       white-space: nowrap;
     }
     .qHint{
-      font-size:12px;
+      font-size:13px;
       color:var(--muted);
       letter-spacing:0.2px;
     }
 
-    /* フィードバック */
+    /* toast */
     .toast{
       position:absolute;
       left:50%;
       top: 14px;
       transform: translateX(-50%);
-      padding:10px 14px;
+      padding:11px 16px;
       border-radius:999px;
-      background: rgba(0,0,0,0.22);
+      background: rgba(0,0,0,0.24);
       border:1px solid rgba(255,255,255,0.12);
       color: var(--text);
-      font-size:13px;
+      font-size:16px;
       font-weight:900;
       opacity:0;
       pointer-events:none;
@@ -196,7 +187,7 @@
       100%{ transform: translateX(-50%) translateY(-10px); opacity:0; }
     }
 
-    /* 下部: 3択ボタン */
+    /* choices */
     .choices{
       margin:0 12px;
       padding:12px;
@@ -205,7 +196,7 @@
       border:1px solid rgba(255,255,255,0.08);
       box-shadow: var(--shadow);
       display:grid;
-      gap:10px;
+      gap:12px;
     }
     .choiceRow{
       display:grid;
@@ -215,14 +206,17 @@
     .choiceBtn{
       border:none;
       border-radius: var(--btnRadius);
-      padding:18px 8px;
+      padding:22px 8px;   /* ★少し厚く */
       background: rgba(255,255,255,0.10);
       border:1px solid rgba(255,255,255,0.12);
       color: var(--text);
-      font-size:26px;
+      font-size:38px;     /* ★大きく */
       font-weight:900;
       cursor:pointer;
       box-shadow: 0 14px 30px rgba(0,0,0,0.18);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .choiceBtn:active{
       transform: translateY(1px);
@@ -240,9 +234,9 @@
       align-items:center;
     }
     .chip{
-      font-size:12px;
+      font-size:13px;
       color:var(--muted);
-      padding:10px 12px;
+      padding:11px 12px;
       border-radius:999px;
       background: rgba(0,0,0,0.18);
       border:1px solid rgba(255,255,255,0.10);
@@ -250,16 +244,17 @@
     .miniBtn{
       border:none;
       border-radius:999px;
-      padding:10px 12px;
+      padding:11px 13px;
       background: rgba(255,255,255,0.10);
       border:1px solid rgba(255,255,255,0.10);
       color: var(--text);
       font-weight:900;
+      font-size:14px;
       cursor:pointer;
     }
     .miniBtn:active{ transform: translateY(1px); }
 
-    /* オーバーレイ */
+    /* overlay */
     .overlay{
       position:absolute;
       inset:0;
@@ -269,7 +264,7 @@
       z-index: 20;
     }
     .overlayCard{
-      width:min(360px, 88%);
+      width:min(380px, 90%);
       border-radius:18px;
       padding:18px 16px;
       background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
@@ -278,23 +273,23 @@
       text-align:center;
     }
     .overlayCard .big{
-      font-size:18px;
+      font-size:20px;
       font-weight:900;
       letter-spacing:0.4px;
       margin-bottom:8px;
     }
     .overlayCard .desc{
-      font-size:12px;
+      font-size:13px;
       color:var(--muted);
-      line-height:1.6;
+      line-height:1.7;
       margin-bottom:14px;
     }
     .startBtn{
       width:100%;
       border:none;
       border-radius: 16px;
-      padding:14px 12px;
-      font-size:16px;
+      padding:15px 12px;
+      font-size:17px;
       font-weight:900;
       color: var(--text);
       background: linear-gradient(180deg, rgba(120,170,255,0.95), rgba(80,120,255,0.82));
@@ -309,8 +304,8 @@
   <div class="app">
     <header class="hud">
       <div class="hudLeft">
-        <div class="title">送り仮名 落ちゲー（簡単）</div>
-        <div class="sub">落ち切る前に「正しいかな」をタップ</div>
+        <div class="title">漢字よみ 落ちゲー（150問）</div>
+        <div class="sub">ランダム（重複なし）で出題 / 大きい文字</div>
       </div>
       <div class="hudRight">
         <div class="row">SCORE<b id="scoreTxt">0</b></div>
@@ -336,8 +331,8 @@
         <div class="overlayCard">
           <div class="big" id="overlayTitle">スタート</div>
           <div class="desc" id="overlayDesc">
-            問題が落ち切る前に、下の3択から正しい送り仮名をタップしてください。<br/>
-            間違い or 時間切れでライフが減ります。
+            150問をシャッフルして、1周するまで同じ問題は出ません。<br/>
+            下の3択から正しい「よみ」をタップしてください。
           </div>
           <button class="startBtn" id="startBtn">開始</button>
         </div>
@@ -359,190 +354,189 @@
   </div>
 
   <script>
-    /* 出題（まずは分かりやすいものだけ） */
+    /* =========================
+       150問（前コードの問題を使用）
+       ========================= */
     var QUESTIONS = [
-      
-        { display: "理解",   correct: "りかい",   wrong: ["りけい","りがい"] },
-  { display: "改善",   correct: "かいぜん", wrong: ["かいせん","かいざん"] },
-  { display: "必要",   correct: "ひつよう", wrong: ["ひっよう","ひつやく"] },
-  { display: "準備",   correct: "じゅんび", wrong: ["じゅんぴ","しゅんび"] },
-  { display: "結果",   correct: "けっか",   wrong: ["けつか","けっが"] },
+      { display: "理解", correct: "りかい", wrong: ["りけい","りがい"] },
+      { display: "改善", correct: "かいぜん", wrong: ["かいせん","かいざん"] },
+      { display: "必要", correct: "ひつよう", wrong: ["ひっよう","ひつやく"] },
+      { display: "準備", correct: "じゅんび", wrong: ["じゅんぴ","しゅんび"] },
+      { display: "結果", correct: "けっか", wrong: ["けつか","けっが"] },
 
-  { display: "予想",   correct: "よそう",   wrong: ["よぞう","ようそう"] },
-  { display: "影響",   correct: "えいきょう", wrong: ["えきょう","けいきょう"] },
-  { display: "対象",   correct: "たいしょう", wrong: ["だいしょう","たいぞう"] },
-  { display: "協力",   correct: "きょうりょく", wrong: ["きょうりく","きょうろく"] },
-  { display: "詳細",   correct: "しょうさい", wrong: ["しょうざい","じょうさい"] },
+      { display: "予想", correct: "よそう", wrong: ["よぞう","ようそう"] },
+      { display: "影響", correct: "えいきょう", wrong: ["えきょう","けいきょう"] },
+      { display: "対象", correct: "たいしょう", wrong: ["だいしょう","たいぞう"] },
+      { display: "協力", correct: "きょうりょく", wrong: ["きょうりく","きょうろく"] },
+      { display: "詳細", correct: "しょうさい", wrong: ["しょうざい","じょうさい"] },
 
-  { display: "確認",   correct: "かくにん", wrong: ["かくねん","かっくにん"] },
-  { display: "提案",   correct: "ていあん", wrong: ["ていなん","たいあん"] },
-  { display: "実施",   correct: "じっし",   wrong: ["じつし","じっせ"] },
-  { display: "状況",   correct: "じょうきょう", wrong: ["じょきょう","しょうきょう"] },
-  { display: "計画",   correct: "けいかく", wrong: ["けいがく","けいかつ"] },
+      { display: "確認", correct: "かくにん", wrong: ["かくねん","かっくにん"] },
+      { display: "提案", correct: "ていあん", wrong: ["ていなん","たいあん"] },
+      { display: "実施", correct: "じっし", wrong: ["じつし","じっせ"] },
+      { display: "状況", correct: "じょうきょう", wrong: ["じょきょう","しょうきょう"] },
+      { display: "計画", correct: "けいかく", wrong: ["けいがく","けいかつ"] },
 
-  { display: "参加",   correct: "さんか",   wrong: ["さんが","さんけ"] },
-  { display: "連絡",   correct: "れんらく", wrong: ["れんりゃく","れんろく"] },
-  { display: "増加",   correct: "ぞうか",   wrong: ["そうか","ぞうが"] },
-  { display: "減少",   correct: "げんしょう", wrong: ["げんじょう","げんぞう"] },
-  { display: "成功",   correct: "せいこう", wrong: ["せいごう","しょうこう"] },
+      { display: "参加", correct: "さんか", wrong: ["さんが","さんけ"] },
+      { display: "連絡", correct: "れんらく", wrong: ["れんりゃく","れんろく"] },
+      { display: "増加", correct: "ぞうか", wrong: ["そうか","ぞうが"] },
+      { display: "減少", correct: "げんしょう", wrong: ["げんじょう","げんぞう"] },
+      { display: "成功", correct: "せいこう", wrong: ["せいごう","しょうこう"] },
 
-  { display: "失敗",   correct: "しっぱい", wrong: ["しつぱい","しんぱい"] },
-  { display: "努力",   correct: "どりょく", wrong: ["どりく","どりょう"] },
-  { display: "緊張",   correct: "きんちょう", wrong: ["きんしょう","きんじょう"] },
-  { display: "判断",   correct: "はんだん", wrong: ["はんたん","ばんだん"] },
-  { display: "発言",   correct: "はつげん", wrong: ["はっげん","はつけん"] },
+      { display: "失敗", correct: "しっぱい", wrong: ["しつぱい","しんぱい"] },
+      { display: "努力", correct: "どりょく", wrong: ["どりく","どりょう"] },
+      { display: "緊張", correct: "きんちょう", wrong: ["きんしょう","きんじょう"] },
+      { display: "判断", correct: "はんだん", wrong: ["はんたん","ばんだん"] },
+      { display: "発言", correct: "はつげん", wrong: ["はっげん","はつけん"] },
 
-  { display: "証明",   correct: "しょうめい", wrong: ["せいめい","しょうみょう"] },
-  { display: "関係",   correct: "かんけい", wrong: ["かんげい","かんけ"] },
-  { display: "現在",   correct: "げんざい", wrong: ["げんさい","けんざい"] },
-  { display: "将来",   correct: "しょうらい", wrong: ["しょうれい","そうらい"] },
-  { display: "世紀",   correct: "せいき",   wrong: ["せき","せいぎ"] },
+      { display: "証明", correct: "しょうめい", wrong: ["せいめい","しょうみょう"] },
+      { display: "関係", correct: "かんけい", wrong: ["かんげい","かんけ"] },
+      { display: "現在", correct: "げんざい", wrong: ["げんさい","けんざい"] },
+      { display: "将来", correct: "しょうらい", wrong: ["しょうれい","そうらい"] },
+      { display: "世紀", correct: "せいき", wrong: ["せき","せいぎ"] },
 
-  { display: "伝統",   correct: "でんとう", wrong: ["てんとう","でんどう"] },
-  { display: "科学",   correct: "かがく",   wrong: ["かくが","かごく"] },
-  { display: "技術",   correct: "ぎじゅつ", wrong: ["きじゅつ","ぎじつ"] },
-  { display: "文化",   correct: "ぶんか",   wrong: ["もんか","ぶんが"] },
-  { display: "経済",   correct: "けいざい", wrong: ["けいさい","きょうざい"] },
+      { display: "伝統", correct: "でんとう", wrong: ["てんとう","でんどう"] },
+      { display: "科学", correct: "かがく", wrong: ["かくが","かごく"] },
+      { display: "技術", correct: "ぎじゅつ", wrong: ["きじゅつ","ぎじつ"] },
+      { display: "文化", correct: "ぶんか", wrong: ["もんか","ぶんが"] },
+      { display: "経済", correct: "けいざい", wrong: ["けいさい","きょうざい"] },
 
-  { display: "貿易",   correct: "ぼうえき", wrong: ["ぼういき","ほうえき"] },
-  { display: "政治",   correct: "せいじ",   wrong: ["せいし","しょうじ"] },
-  { display: "法律",   correct: "ほうりつ", wrong: ["ほうりち","ほうれつ"] },
-  { display: "議論",   correct: "ぎろん",   wrong: ["きろん","ぎりん"] },
-  { display: "承認",   correct: "しょうにん", wrong: ["じょうにん","しょうりん"] },
+      { display: "貿易", correct: "ぼうえき", wrong: ["ぼういき","ほうえき"] },
+      { display: "政治", correct: "せいじ", wrong: ["せいし","しょうじ"] },
+      { display: "法律", correct: "ほうりつ", wrong: ["ほうりち","ほうれつ"] },
+      { display: "議論", correct: "ぎろん", wrong: ["きろん","ぎりん"] },
+      { display: "承認", correct: "しょうにん", wrong: ["じょうにん","しょうりん"] },
 
-  { display: "適切",   correct: "てきせつ", wrong: ["てきぜつ","できせつ"] },
-  { display: "危険",   correct: "きけん",   wrong: ["ぎけん","きがん"] },
-  { display: "安全",   correct: "あんぜん", wrong: ["あんせん","あんぜい"] },
-  { display: "健康",   correct: "けんこう", wrong: ["けんごう","きんこう"] },
-  { display: "食品",   correct: "しょくひん", wrong: ["しょくびん","そくひん"] },
+      { display: "適切", correct: "てきせつ", wrong: ["てきぜつ","できせつ"] },
+      { display: "危険", correct: "きけん", wrong: ["ぎけん","きがん"] },
+      { display: "安全", correct: "あんぜん", wrong: ["あんせん","あんぜい"] },
+      { display: "健康", correct: "けんこう", wrong: ["けんごう","きんこう"] },
+      { display: "食品", correct: "しょくひん", wrong: ["しょくびん","そくひん"] },
 
-  { display: "環境",   correct: "かんきょう", wrong: ["かんけい","かんぎょう"] },
-  { display: "地域",   correct: "ちいき",   wrong: ["ちえき","じいき"] },
-  { display: "交通",   correct: "こうつう", wrong: ["こうづう","こうとう"] },
-  { display: "事故",   correct: "じこ",     wrong: ["しこ","じご"] },
-  { display: "救助",   correct: "きゅうじょ", wrong: ["きゅうしょ","きゅうじゅ"] },
-  
-   { display: "顕著",   correct: "けんちょ",   wrong: ["けんしょ","けんちゅ"] },
-  { display: "措置",   correct: "そち",       wrong: ["しょち","そうち"] },
-  { display: "概念",   correct: "がいねん",   wrong: ["かいねん","がいめん"] },
-  { display: "吟味",   correct: "ぎんみ",     wrong: ["きんみ","ぎんび"] },
-  { display: "把握",   correct: "はあく",     wrong: ["はくあ","ばあく"] },
+      { display: "環境", correct: "かんきょう", wrong: ["かんけい","かんぎょう"] },
+      { display: "地域", correct: "ちいき", wrong: ["ちえき","じいき"] },
+      { display: "交通", correct: "こうつう", wrong: ["こうづう","こうとう"] },
+      { display: "事故", correct: "じこ", wrong: ["しこ","じご"] },
+      { display: "救助", correct: "きゅうじょ", wrong: ["きゅうしょ","きゅうじゅ"] },
 
-  { display: "妥当",   correct: "だとう",     wrong: ["たとう","だどう"] },
-  { display: "遵守",   correct: "じゅんしゅ", wrong: ["じゅんす","しゅんしゅ"] },
-  { display: "是正",   correct: "ぜせい",     wrong: ["ぜいせい","せせい"] },
-  { display: "根拠",   correct: "こんきょ",   wrong: ["こんこ","こんけい"] },
-  { display: "見解",   correct: "けんかい",   wrong: ["けんがい","げんかい"] },
+      { display: "顕著", correct: "けんちょ", wrong: ["けんしょ","けんちゅ"] },
+      { display: "措置", correct: "そち", wrong: ["しょち","そうち"] },
+      { display: "概念", correct: "がいねん", wrong: ["かいねん","がいめん"] },
+      { display: "吟味", correct: "ぎんみ", wrong: ["きんみ","ぎんび"] },
+      { display: "把握", correct: "はあく", wrong: ["はくあ","ばあく"] },
 
-  { display: "懸念",   correct: "けねん",     wrong: ["けんねん","けれん"] },
-  { display: "模索",   correct: "もさく",     wrong: ["もさつ","もさっ"] },
-  { display: "促進",   correct: "そくしん",   wrong: ["しょくしん","そっしん"] },
-  { display: "精査",   correct: "せいさ",     wrong: ["せいしゃ","しょうさ"] },
-  { display: "担保",   correct: "たんぽ",     wrong: ["たんぼ","だんぽ"] },
+      { display: "妥当", correct: "だとう", wrong: ["たとう","だどう"] },
+      { display: "遵守", correct: "じゅんしゅ", wrong: ["じゅんす","しゅんしゅ"] },
+      { display: "是正", correct: "ぜせい", wrong: ["ぜいせい","せせい"] },
+      { display: "根拠", correct: "こんきょ", wrong: ["こんこ","こんけい"] },
+      { display: "見解", correct: "けんかい", wrong: ["けんがい","げんかい"] },
 
-  { display: "抽象",   correct: "ちゅうしょう", wrong: ["ちゅしょう","ちゅうぞう"] },
-  { display: "優遇",   correct: "ゆうぐう",   wrong: ["ゆうきゅう","ゆうぐ"] },
-  { display: "抑制",   correct: "よくせい",   wrong: ["おくせい","よくさい"] },
-  { display: "訂正",   correct: "ていせい",   wrong: ["ていしょう","てせい"] },
-  { display: "誤差",   correct: "ごさ",       wrong: ["こさ","ごしゃ"] },
+      { display: "懸念", correct: "けねん", wrong: ["けんねん","けれん"] },
+      { display: "模索", correct: "もさく", wrong: ["もさつ","もさっ"] },
+      { display: "促進", correct: "そくしん", wrong: ["しょくしん","そっしん"] },
+      { display: "精査", correct: "せいさ", wrong: ["せいしゃ","しょうさ"] },
+      { display: "担保", correct: "たんぽ", wrong: ["たんぼ","だんぽ"] },
 
-  { display: "逸脱",   correct: "いつだつ",   wrong: ["いったつ","いつたつ"] },
-  { display: "偏見",   correct: "へんけん",   wrong: ["へんげん","へいけん"] },
-  { display: "傾向",   correct: "けいこう",   wrong: ["けんこう","けいごう"] },
-  { display: "紛争",   correct: "ふんそう",   wrong: ["ふんそう(濁音なし)","ふんぞう"] },
-  { display: "統治",   correct: "とうち",     wrong: ["とうじ","とおち"] },
+      { display: "抽象", correct: "ちゅうしょう", wrong: ["ちゅしょう","ちゅうぞう"] },
+      { display: "優遇", correct: "ゆうぐう", wrong: ["ゆうきゅう","ゆうぐ"] },
+      { display: "抑制", correct: "よくせい", wrong: ["おくせい","よくさい"] },
+      { display: "訂正", correct: "ていせい", wrong: ["ていしょう","てせい"] },
+      { display: "誤差", correct: "ごさ", wrong: ["こさ","ごしゃ"] },
 
-  { display: "施策",   correct: "しさく",     wrong: ["しさっ","せさく"] },
-  { display: "審査",   correct: "しんさ",     wrong: ["しんざ","じんさ"] },
-  { display: "迅速",   correct: "じんそく",   wrong: ["しんそく","じんぞく"] },
-  { display: "慎重",   correct: "しんちょう", wrong: ["しんじょう","しんちょ"] },
-  { display: "緩和",   correct: "かんわ",     wrong: ["がんわ","かんば"] },
+      { display: "逸脱", correct: "いつだつ", wrong: ["いったつ","いつたつ"] },
+      { display: "偏見", correct: "へんけん", wrong: ["へんげん","へいけん"] },
+      { display: "傾向", correct: "けいこう", wrong: ["けんこう","けいごう"] },
+      { display: "紛争", correct: "ふんそう", wrong: ["ふんそう(濁音なし)","ふんぞう"] },
+      { display: "統治", correct: "とうち", wrong: ["とうじ","とおち"] },
 
-  { display: "妨害",   correct: "ぼうがい",   wrong: ["ほうがい","ぼうけい"] },
-  { display: "譲歩",   correct: "じょうほ",   wrong: ["じょうぶ","しょうほ"] },
-  { display: "補償",   correct: "ほしょう",   wrong: ["ほそう","ほじょう"] },
-  { display: "賠償",   correct: "ばいしょう", wrong: ["はいしょう","ばいそう"] },
-  { display: "損害",   correct: "そんがい",   wrong: ["そんけい","そんだい"] },
+      { display: "施策", correct: "しさく", wrong: ["しさっ","せさく"] },
+      { display: "審査", correct: "しんさ", wrong: ["しんざ","じんさ"] },
+      { display: "迅速", correct: "じんそく", wrong: ["しんそく","じんぞく"] },
+      { display: "慎重", correct: "しんちょう", wrong: ["しんじょう","しんちょ"] },
+      { display: "緩和", correct: "かんわ", wrong: ["がんわ","かんば"] },
 
-  { display: "徴収",   correct: "ちょうしゅう", wrong: ["ちょうじゅう","ちょうしゅ"] },
-  { display: "免除",   correct: "めんじょ",   wrong: ["めんしょ","めんじゅ"] },
-  { display: "履歴",   correct: "りれき",     wrong: ["りりき","れきれき"] },
-  { display: "崩壊",   correct: "ほうかい",   wrong: ["くずかい","ほうがい"] },
-  { display: "概略",   correct: "がいりゃく", wrong: ["がいらく","かいりゃく"] },
+      { display: "妨害", correct: "ぼうがい", wrong: ["ほうがい","ぼうけい"] },
+      { display: "譲歩", correct: "じょうほ", wrong: ["じょうぶ","しょうほ"] },
+      { display: "補償", correct: "ほしょう", wrong: ["ほそう","ほじょう"] },
+      { display: "賠償", correct: "ばいしょう", wrong: ["はいしょう","ばいそう"] },
+      { display: "損害", correct: "そんがい", wrong: ["そんけい","そんだい"] },
 
-  { display: "即座",   correct: "そくざ",     wrong: ["そくさ","しょくざ"] },
-  { display: "堅実",   correct: "けんじつ",   wrong: ["かたじつ","けいじつ"] },
-  { display: "到達",   correct: "とうたつ",   wrong: ["どうたつ","とうだつ"] },
-  { display: "継続",   correct: "けいぞく",   wrong: ["けいそく","けいづく"] },
-  { display: "推移",   correct: "すいい",     wrong: ["すい", "すいえい"] },
+      { display: "徴収", correct: "ちょうしゅう", wrong: ["ちょうじゅう","ちょうしゅ"] },
+      { display: "免除", correct: "めんじょ", wrong: ["めんしょ","めんじゅ"] },
+      { display: "履歴", correct: "りれき", wrong: ["りりき","れきれき"] },
+      { display: "崩壊", correct: "ほうかい", wrong: ["くずかい","ほうがい"] },
+      { display: "概略", correct: "がいりゃく", wrong: ["がいらく","かいりゃく"] },
 
-  { display: "顧問",   correct: "こもん",     wrong: ["くもん","こぼん"] },
-  { display: "奨励",   correct: "しょうれい", wrong: ["しょうりょう","しょうらい"] },
-  { display: "自粛",   correct: "じしゅく",   wrong: ["じしゅう","ししゅく"] },
-  { display: "慈善",   correct: "じぜん",     wrong: ["しぜん","じせん"] },
-  { display: "脅威",   correct: "きょうい",   wrong: ["きょい","きょうえい"] },
-  
-    { display: "憂慮",   correct: "ゆうりょ",   wrong: ["ゆうろ","ゆりょ"] },
-  { display: "払拭",   correct: "ふっしょく", wrong: ["ふつしょく","はらしょく"] },
-  { display: "看過",   correct: "かんか",     wrong: ["かんが","けんか"] },
-  { display: "黙認",   correct: "もくにん",   wrong: ["もくねん","ぼくにん"] },
-  { display: "検証",   correct: "けんしょう", wrong: ["けんせい","けんじょう"] },
+      { display: "即座", correct: "そくざ", wrong: ["そくさ","しょくざ"] },
+      { display: "堅実", correct: "けんじつ", wrong: ["かたじつ","けいじつ"] },
+      { display: "到達", correct: "とうたつ", wrong: ["どうたつ","とうだつ"] },
+      { display: "継続", correct: "けいぞく", wrong: ["けいそく","けいづく"] },
+      { display: "推移", correct: "すいい", wrong: ["すい","すいえい"] },
 
-  { display: "踏襲",   correct: "とうしゅう", wrong: ["ふしゅう","とうしゅ"] },
-  { display: "示唆",   correct: "しさ",       wrong: ["ししゃ","じさ"] },
-  { display: "斡旋",   correct: "あっせん",   wrong: ["あつせん","あっぜん"] },
-  { display: "醸成",   correct: "じょうせい", wrong: ["じょうせん","しょうせい"] },
-  { display: "捏造",   correct: "ねつぞう",   wrong: ["ねっそう","でつぞう"] },
+      { display: "顧問", correct: "こもん", wrong: ["くもん","こぼん"] },
+      { display: "奨励", correct: "しょうれい", wrong: ["しょうりょう","しょうらい"] },
+      { display: "自粛", correct: "じしゅく", wrong: ["じしゅう","ししゅく"] },
+      { display: "慈善", correct: "じぜん", wrong: ["しぜん","じせん"] },
+      { display: "脅威", correct: "きょうい", wrong: ["きょい","きょうえい"] },
 
-  { display: "恣意",   correct: "しい",       wrong: ["しぎ","じい"] },
-  { display: "誹謗",   correct: "ひぼう",     wrong: ["ひぼ","ひもう"] },
-  { display: "中傷",   correct: "ちゅうしょう", wrong: ["ちゅしょう","ちゅうじょう"] },
-  { display: "稟議",   correct: "りんぎ",     wrong: ["りんき","ひんぎ"] },
-  { display: "折衝",   correct: "せっしょう", wrong: ["おっしょう","せつしょう"] },
+      { display: "憂慮", correct: "ゆうりょ", wrong: ["ゆうろ","ゆりょ"] },
+      { display: "払拭", correct: "ふっしょく", wrong: ["ふつしょく","はらしょく"] },
+      { display: "看過", correct: "かんか", wrong: ["かんが","けんか"] },
+      { display: "黙認", correct: "もくにん", wrong: ["もくねん","ぼくにん"] },
+      { display: "検証", correct: "けんしょう", wrong: ["けんせい","けんじょう"] },
 
-  { display: "渉外",   correct: "しょうがい", wrong: ["しょうげ","しょうかい"] },
-  { display: "精緻",   correct: "せいち",     wrong: ["せいし","しょうち"] },
-  { display: "端緒",   correct: "たんしょ",   wrong: ["たんちょ","だんしょ"] },
-  { display: "帰趨",   correct: "きすう",     wrong: ["きしゅ","きす"] },
-  { display: "趨勢",   correct: "すうせい",   wrong: ["しゅせい","すせい"] },
+      { display: "踏襲", correct: "とうしゅう", wrong: ["ふしゅう","とうしゅ"] },
+      { display: "示唆", correct: "しさ", wrong: ["ししゃ","じさ"] },
+      { display: "斡旋", correct: "あっせん", wrong: ["あつせん","あっぜん"] },
+      { display: "醸成", correct: "じょうせい", wrong: ["じょうせん","しょうせい"] },
+      { display: "捏造", correct: "ねつぞう", wrong: ["ねっそう","でつぞう"] },
 
-  { display: "逼迫",   correct: "ひっぱく",   wrong: ["ひつぱく","ひょっぱく"] },
-  { display: "逼塞",   correct: "ひっそく",   wrong: ["ひっそ","ひつそく"] },
-  { display: "払底",   correct: "ふってい",   wrong: ["ふって","はらてい"] },
-  { display: "逼真",   correct: "ひっしん",   wrong: ["ひっじん","ひつしん"] },
-  { display: "緻密",   correct: "ちみつ",     wrong: ["ちみつ(濁音なし)","しみつ"] },
+      { display: "恣意", correct: "しい", wrong: ["しぎ","じい"] },
+      { display: "誹謗", correct: "ひぼう", wrong: ["ひぼ","ひもう"] },
+      { display: "中傷", correct: "ちゅうしょう", wrong: ["ちゅしょう","ちゅうじょう"] },
+      { display: "稟議", correct: "りんぎ", wrong: ["りんき","ひんぎ"] },
+      { display: "折衝", correct: "せっしょう", wrong: ["おっしょう","せつしょう"] },
 
-  { display: "瑕疵",   correct: "かし",       wrong: ["かじ","けし"] },
-  { display: "毀損",   correct: "きそん",     wrong: ["ぎそん","きざん"] },
-  { display: "罹患",   correct: "りかん",     wrong: ["りがん","れいかん"] },
-  { display: "漸進",   correct: "ぜんしん",   wrong: ["ざんしん","ぜんじん"] },
-  { display: "刹那",   correct: "せつな",     wrong: ["さつな","せつね"] },
+      { display: "渉外", correct: "しょうがい", wrong: ["しょうげ","しょうかい"] },
+      { display: "精緻", correct: "せいち", wrong: ["せいし","しょうち"] },
+      { display: "端緒", correct: "たんしょ", wrong: ["たんちょ","だんしょ"] },
+      { display: "帰趨", correct: "きすう", wrong: ["きしゅ","きす"] },
+      { display: "趨勢", correct: "すうせい", wrong: ["しゅせい","すせい"] },
 
-  { display: "矯正",   correct: "きょうせい", wrong: ["きょせい","きょうさい"] },
-  { display: "矯激",   correct: "きょうげき", wrong: ["きょうき","きょげき"] },
-  { display: "慫慂",   correct: "しょうよう", wrong: ["そうよう","しょうゆう"] },
-  { display: "蹂躙",   correct: "じゅうりん", wrong: ["じゅりん","しゅうりん"] },
-  { display: "慟哭",   correct: "どうこく",   wrong: ["とうこく","どうごく"] },
+      { display: "逼迫", correct: "ひっぱく", wrong: ["ひつぱく","ひょっぱく"] },
+      { display: "逼塞", correct: "ひっそく", wrong: ["ひっそ","ひつそく"] },
+      { display: "払底", correct: "ふってい", wrong: ["ふって","はらてい"] },
+      { display: "逼真", correct: "ひっしん", wrong: ["ひっじん","ひつしん"] },
+      { display: "緻密", correct: "ちみつ", wrong: ["ちみつ(濁音なし)","しみつ"] },
 
-  { display: "倨傲",   correct: "きょごう",   wrong: ["こごう","きょうごう"] },
-  { display: "桎梏",   correct: "しっこく",   wrong: ["てつこく","しつこく"] },
-  { display: "逡巡",   correct: "しゅんじゅん", wrong: ["しゅんじゅ","すんじゅん"] },
-  { display: "蹉跌",   correct: "さてつ",     wrong: ["さてっ","さてい"] },
-  { display: "憔悴",   correct: "しょうすい", wrong: ["しょうさい","しょうずい"] },
+      { display: "瑕疵", correct: "かし", wrong: ["かじ","けし"] },
+      { display: "毀損", correct: "きそん", wrong: ["ぎそん","きざん"] },
+      { display: "罹患", correct: "りかん", wrong: ["りがん","れいかん"] },
+      { display: "漸進", correct: "ぜんしん", wrong: ["ざんしん","ぜんじん"] },
+      { display: "刹那", correct: "せつな", wrong: ["さつな","せつね"] },
 
-  { display: "慇懃",   correct: "いんぎん",   wrong: ["いんけん","えんぎん"] },
-  { display: "慄然",   correct: "りつぜん",   wrong: ["りっぜん","りつねん"] },
-  { display: "慟然",   correct: "どうぜん",   wrong: ["とうぜん","どうねん"] },
-  { display: "狼狽",   correct: "ろうばい",   wrong: ["ろうはい","ろうべい"] },
-  { display: "憂鬱",   correct: "ゆううつ",   wrong: ["ゆうつ","ゆういつ"] },
+      { display: "矯正", correct: "きょうせい", wrong: ["きょせい","きょうさい"] },
+      { display: "矯激", correct: "きょうげき", wrong: ["きょうき","きょげき"] },
+      { display: "慫慂", correct: "しょうよう", wrong: ["そうよう","しょうゆう"] },
+      { display: "蹂躙", correct: "じゅうりん", wrong: ["じゅりん","しゅうりん"] },
+      { display: "慟哭", correct: "どうこく", wrong: ["とうこく","どうごく"] },
 
-  { display: "饒舌",   correct: "じょうぜつ", wrong: ["にょうぜつ","じょうせつ"] },
-  { display: "慳貪",   correct: "けんどん",   wrong: ["けんたん","かんどん"] },
-  { display: "矜持",   correct: "きょうじ",   wrong: ["きんじ","こんじ"] },
-  { display: "刮目",   correct: "かつもく",   wrong: ["かっもく","かつめ"] },
-  { display: "僥倖",   correct: "ぎょうこう", wrong: ["きょうこう","ぎょうこ"] }
-      
-      { 
+      { display: "倨傲", correct: "きょごう", wrong: ["こごう","きょうごう"] },
+      { display: "桎梏", correct: "しっこく", wrong: ["てつこく","しつこく"] },
+      { display: "逡巡", correct: "しゅんじゅん", wrong: ["しゅんじゅ","すんじゅん"] },
+      { display: "蹉跌", correct: "さてつ", wrong: ["さてっ","さてい"] },
+      { display: "憔悴", correct: "しょうすい", wrong: ["しょうさい","しょうずい"] },
+
+      { display: "慇懃", correct: "いんぎん", wrong: ["いんけん","えんぎん"] },
+      { display: "慄然", correct: "りつぜん", wrong: ["りっぜん","りつねん"] },
+      { display: "慟然", correct: "どうぜん", wrong: ["とうぜん","どうねん"] },
+      { display: "狼狽", correct: "ろうばい", wrong: ["ろうはい","ろうべい"] },
+      { display: "憂鬱", correct: "ゆううつ", wrong: ["ゆうつ","ゆういつ"] },
+
+      { display: "饒舌", correct: "じょうぜつ", wrong: ["にょうぜつ","じょうせつ"] },
+      { display: "慳貪", correct: "けんどん", wrong: ["けんたん","かんどん"] },
+      { display: "矜持", correct: "きょうじ", wrong: ["きんじ","こんじ"] },
+      { display: "刮目", correct: "かつもく", wrong: ["かっもく","かつめ"] },
+      { display: "僥倖", correct: "ぎょうこう", wrong: ["きょうこう","ぎょうこ"] }
     ];
 
     var field = document.getElementById("field");
@@ -577,14 +571,14 @@
     var paused = false;
     var answered = false;
 
-    var fallY = -60;
+    var fallY = -90;
     var catchY = 0;
 
-    // 速度（簡単版は固定でゆっくり）
-    var speed = 2.0; // px/frame
+    // 速度（ゆっくり）
+    var speedPxPerSec = 140;
 
     var correct = "";
-    var lastFrame = 0;
+    var lastTs = 0;
 
     function randInt(n){ return Math.floor(Math.random() * n); }
 
@@ -615,6 +609,20 @@
       }
     }
 
+    // ★長い文字は自動で縮小
+    function fitChoiceFont(btn){
+      var s = btn.textContent || "";
+      var len = s.length;
+
+      var fs = 38; // 基本
+      if (len >= 10) fs = 20;
+      else if (len >= 8) fs = 22;
+      else if (len >= 6) fs = 28;
+      else if (len >= 5) fs = 32;
+
+      btn.style.fontSize = fs + "px";
+    }
+
     function renderHud(){
       scoreTxt.textContent = String(score);
       streakTxt.textContent = String(streak);
@@ -624,24 +632,58 @@
     }
 
     function layout(){
-      // 判定ライン: bottom 112px → field内のY座標に変換
-      // fallingのカードがこのYを超えたらタイムアウト扱い
       var h = field.clientHeight;
-      catchY = h - 112 - 40; // ざっくり中央基準（カード高さの半分程度）
+      catchY = h - 124 - 60;
+    }
+
+    /* =========================
+       ★ランダムだけ（重複なし）
+       - QUESTIONS をシャッフルして deck を作る
+       - deck を順に消費
+       - 使い切ったらまたシャッフル
+       ========================= */
+    var deck = [];
+    var deckIndex = 0;
+    var lastDisplay = "";
+
+    function refillDeck(){
+      deck = shuffle(QUESTIONS);
+      deckIndex = 0;
+
+      // 周回の境目で同じ問題が連続しないようにする（可能なら先頭を入れ替え）
+      if (deck.length >= 2 && lastDisplay && deck[0].display === lastDisplay){
+        var tmp = deck[0];
+        deck[0] = deck[1];
+        deck[1] = tmp;
+      }
+    }
+
+    function nextQuestion(){
+      if (!deck || deck.length === 0 || deckIndex >= deck.length){
+        refillDeck();
+      }
+      var q = deck[deckIndex++];
+      lastDisplay = q.display;
+      return q;
     }
 
     function spawn(){
-      var q = QUESTIONS[randInt(QUESTIONS.length)];
+      var q = nextQuestion();
       correct = q.correct;
 
       var opts = shuffle([q.correct, q.wrong[0], q.wrong[1]]);
+
       qText.textContent = q.display;
 
       c0.textContent = opts[0];
       c1.textContent = opts[1];
       c2.textContent = opts[2];
 
-      fallY = -60;
+      fitChoiceFont(c0);
+      fitChoiceFont(c1);
+      fitChoiceFont(c2);
+
+      fallY = -90;
       falling.style.top = fallY + "px";
 
       answered = false;
@@ -663,7 +705,7 @@
 
       if (tapped === correct){
         streak += 1;
-        var gain = 10 + Math.min(20, streak); // 連続でちょい増し
+        var gain = 10 + Math.min(20, streak);
         score += gain;
         showToast("正解 +" + gain, true);
       } else {
@@ -678,7 +720,6 @@
         gameOver();
         return;
       }
-
       nextAfter(420);
     }
 
@@ -699,11 +740,13 @@
 
     function loop(ts){
       if (!running) return;
-      if (!lastFrame) lastFrame = ts;
-      lastFrame = ts;
+
+      if (!lastTs) lastTs = ts;
+      var dt = ts - lastTs;
+      lastTs = ts;
 
       if (!paused && !answered){
-        fallY += speed;
+        fallY += (dt * speedPxPerSec) / 1000;
         falling.style.top = fallY + "px";
         if (fallY >= catchY){
           timeout();
@@ -719,7 +762,11 @@
       paused = false;
       running = true;
       overlay.style.display = "none";
-      lastFrame = 0;
+      lastTs = 0;
+
+      // ★開始時に必ずシャッフル
+      lastDisplay = "";
+      refillDeck();
 
       layout();
       spawn();
@@ -745,19 +792,25 @@
 
       overlayTitle.textContent = "スタート";
       overlayDesc.innerHTML =
-        "問題が落ち切る前に、下の3択から正しい送り仮名をタップしてください。<br/>間違い or 時間切れでライフが減ります。";
+        "150問をシャッフルして、1周するまで同じ問題は出ません。<br/>下の3択から正しい「よみ」をタップしてください。";
       startBtn.textContent = "開始";
       overlay.style.display = "grid";
 
       qText.textContent = "　";
       c0.textContent = "-"; c1.textContent = "-"; c2.textContent = "-";
-      fallY = -60; falling.style.top = fallY + "px";
+      c0.style.fontSize = "38px"; c1.style.fontSize = "38px"; c2.style.fontSize = "38px";
+
+      fallY = -90;
+      falling.style.top = fallY + "px";
 
       score = 0; streak = 0; life = 3;
       renderHud();
+
+      deck = [];
+      deckIndex = 0;
+      lastDisplay = "";
     }
 
-    // 入力：3択タップのみ
     c0.addEventListener("click", function(){ judge(c0.textContent); });
     c1.addEventListener("click", function(){ judge(c1.textContent); });
     c2.addEventListener("click", function(){ judge(c2.textContent); });
