@@ -1,13 +1,13 @@
 <!--
-[JST 2026-01-04 11:10]  kanji_quiz_150q_big_3col.html
-漢字よみクイズ（落下なし / 150問 / ランダム重複なし / 3列ボタン固定）
+[JST 2026-01-04 11:20]  kanji_quiz_150q_big_3row_10q.html
+漢字よみクイズ（落下なし / 150問からランダム10問 / 重複なし / 答え3行）
 -->
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>漢字よみクイズ（150問・3列）</title>
+  <title>漢字よみクイズ（10問・3行）</title>
   <style>
     :root{
       --bg:#0e1326;
@@ -15,8 +15,6 @@
       --panel2:rgba(255,255,255,0.10);
       --text:rgba(255,255,255,0.92);
       --muted:rgba(255,255,255,0.68);
-      --ok:rgba(120,170,255,0.95);
-      --ng:rgba(255,90,120,0.95);
       --shadow: 0 18px 55px rgba(0,0,0,0.35);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -89,7 +87,7 @@
       font-weight:900;
     }
 
-    /* 問題パネル（落下なし） */
+    /* 問題パネル */
     .stage{
       margin:0 12px;
       border-radius: var(--radius);
@@ -104,7 +102,7 @@
       min-height: 220px;
     }
     .qCard{
-      width:min(520px, 100%);
+      width:min(560px, 100%);
       border-radius:18px;
       padding:18px 16px;
       background: rgba(0,0,0,0.26);
@@ -113,7 +111,7 @@
       text-align:center;
     }
     .qText{
-      font-size:72px;         /* ★大きい */
+      font-size:76px;   /* ★大きい */
       font-weight:900;
       letter-spacing:2px;
       line-height:1.0;
@@ -163,7 +161,7 @@
       100%{ transform: translateX(-50%) translateY(-10px); opacity:0; }
     }
 
-    /* 下部：回答（3列固定で常に見える） */
+    /* 下部：回答（★3行＝縦並び） */
     .choices{
       margin:0 12px;
       padding:12px;
@@ -174,9 +172,9 @@
       display:grid;
       gap:12px;
     }
-    .choiceRow{
+    .choiceCol{
       display:grid;
-      grid-template-columns: 1fr 1fr 1fr; /* ★3列 */
+      grid-template-columns: 1fr; /* ★1列＝3行 */
       gap:10px;
     }
     .choiceBtn{
@@ -186,16 +184,16 @@
       background: rgba(255,255,255,0.10);
       border:1px solid rgba(255,255,255,0.12);
       color: var(--text);
-      font-size:34px;         /* ★大きい */
+      font-size:34px;   /* ★大きい */
       font-weight:900;
       cursor:pointer;
       box-shadow: 0 14px 30px rgba(0,0,0,0.18);
 
-      /* ★見切れ対策：折り返し許可 */
+      /* ★長い読みでも見切れにくく */
       white-space: normal;
       line-height: 1.05;
       word-break: break-all;
-      min-height: 78px;
+      min-height: 74px;
       display:grid;
       place-items:center;
       text-align:center;
@@ -282,13 +280,13 @@
 
     /* 小さい画面向け微調整 */
     @media (max-width: 375px){
-      .qText{ font-size:64px; }
-      .choiceBtn{ font-size:30px; min-height:74px; }
+      .qText{ font-size:66px; }
+      .choiceBtn{ font-size:30px; min-height:70px; }
     }
     @media (max-height: 740px){
       .stage{ min-height: 200px; }
       .qText{ font-size:62px; }
-      .choiceBtn{ min-height:70px; }
+      .choiceBtn{ min-height:68px; }
     }
   </style>
 </head>
@@ -297,14 +295,14 @@
   <div class="app">
     <header class="hud">
       <div class="hudLeft">
-        <div class="title">漢字よみクイズ（150問）</div>
-        <div class="sub">落下なし / 3列ボタン固定 / ランダム重複なし</div>
+        <div class="title">漢字よみクイズ（ランダム10問）</div>
+        <div class="sub">落下なし / 答え3行 / 150問から抽出（重複なし）</div>
       </div>
       <div class="hudRight">
         <div class="row">SCORE<b id="scoreTxt">0</b></div>
         <div class="row">STREAK<b id="streakTxt">0</b></div>
         <div class="row">LIFE<b id="lifeTxt">3</b></div>
-        <div class="row">PROG<b id="progTxt">0/150</b></div>
+        <div class="row">PROG<b id="progTxt">0/10</b></div>
       </div>
     </header>
 
@@ -313,14 +311,14 @@
 
       <div class="qCard">
         <div class="qText" id="qText">　</div>
-        <div class="qHint" id="qHint">下の3択から正しい「よみ」をタップ</div>
+        <div class="qHint" id="qHint">下の3つ（縦）から正しい「よみ」をタップ</div>
       </div>
 
       <div class="overlay" id="overlay">
         <div class="overlayCard">
           <div class="big" id="overlayTitle">スタート</div>
           <div class="desc" id="overlayDesc">
-            150問をシャッフルして、1周するまで同じ問題は出ません。<br/>
+            150問の中からランダムに10問を選んで出題します（10問内は重複しません）。<br/>
             正しい「よみ」をタップしてください（間違いでライフ-1）。
           </div>
           <button class="startBtn" id="startBtn">開始</button>
@@ -329,13 +327,13 @@
     </main>
 
     <footer class="choices">
-      <div class="choiceRow">
+      <div class="choiceCol">
         <button class="choiceBtn" id="c0">-</button>
         <button class="choiceBtn" id="c1">-</button>
         <button class="choiceBtn" id="c2">-</button>
       </div>
       <div class="smallRow">
-        <div class="chip" id="statusChip">出題: ランダム（重複なし）</div>
+        <div class="chip" id="statusChip">出題: ランダム10問</div>
         <button class="miniBtn" id="pauseBtn">一時停止</button>
         <button class="miniBtn" id="resetBtn">リセット</button>
       </div>
@@ -528,6 +526,9 @@
       { display: "僥倖", correct: "ぎょうこう", wrong: ["きょうこう","ぎょうこ"] }
     ];
 
+    /* ===== 設定 ===== */
+    var SESSION_COUNT = 10; // ★ランダム10問
+
     var qText = document.getElementById("qText");
     var toast = document.getElementById("toast");
 
@@ -553,14 +554,15 @@
     var score = 0;
     var streak = 0;
     var life = 3;
+    var correctCount = 0;
 
     var running = false;
     var paused = false;
     var answered = false;
 
     var correct = "";
-    var total = QUESTIONS.length;
 
+    /* ===== util ===== */
     function randInt(n){ return Math.floor(Math.random() * n); }
 
     function shuffle(arr){
@@ -590,7 +592,7 @@
       }
     }
 
-    // ★長い読みでも見えるように、文字サイズを自動調整（3列に収める）
+    // ★長い読みでも見えるように、文字サイズを自動調整
     function fitChoiceFont(btn){
       var s = btn.textContent || "";
       var len = s.length;
@@ -604,48 +606,33 @@
       btn.style.fontSize = fs + "px";
     }
 
+    /* ===== 10問セッション（重複なし） ===== */
+    var session = [];      // 10問
+    var qIndex = 0;        // 0..9
+
+    function buildSession(){
+      // QUESTIONSをシャッフルして先頭10個を使う（重複なし）
+      var pool = shuffle(QUESTIONS);
+      session = pool.slice(0, Math.min(SESSION_COUNT, pool.length));
+      qIndex = 0;
+    }
+
     function renderHud(){
       scoreTxt.textContent = String(score);
       streakTxt.textContent = String(streak);
       lifeTxt.textContent = String(life);
-      progTxt.textContent = String(Math.min(deckIndex, total)) + "/" + String(total);
+      progTxt.textContent = String(Math.min(qIndex, SESSION_COUNT)) + "/" + String(SESSION_COUNT);
       pauseBtn.textContent = paused ? "再開" : "一時停止";
-      statusChip.textContent = "出題: ランダム（重複なし）";
-    }
-
-    /* =========================
-       ★ランダムだけ（重複なし）
-       - QUESTIONS をシャッフルして deck を作る
-       - deck を順に消費
-       - 使い切ったらまたシャッフル（周回）
-       ========================= */
-    var deck = [];
-    var deckIndex = 0;
-    var lastDisplay = "";
-
-    function refillDeck(){
-      deck = shuffle(QUESTIONS);
-      deckIndex = 0;
-
-      // 周回の境目で同じ問題が連続しないようにする（可能なら先頭を入れ替え）
-      if (deck.length >= 2 && lastDisplay && deck[0].display === lastDisplay){
-        var tmp = deck[0];
-        deck[0] = deck[1];
-        deck[1] = tmp;
-      }
-    }
-
-    function nextQuestion(){
-      if (!deck || deck.length === 0 || deckIndex >= deck.length){
-        refillDeck();
-      }
-      var q = deck[deckIndex++];
-      lastDisplay = q.display;
-      return q;
+      statusChip.textContent = "出題: ランダム10問";
     }
 
     function spawn(){
-      var q = nextQuestion();
+      if (qIndex >= session.length){
+        clearGame();
+        return;
+      }
+
+      var q = session[qIndex];
       correct = q.correct;
 
       var opts = shuffle([q.correct, q.wrong[0], q.wrong[1]]);
@@ -669,6 +656,7 @@
       setButtonsEnabled(false);
       setTimeout(function(){
         if (!running) return;
+        qIndex += 1;
         spawn();
       }, ms);
     }
@@ -678,6 +666,7 @@
       answered = true;
 
       if (tapped === correct){
+        correctCount += 1;
         streak += 1;
         var gain = 10 + Math.min(20, streak);
         score += gain;
@@ -695,11 +684,6 @@
         return;
       }
 
-      // 1周完了したら軽く通知（続行は自動で周回）
-      if (deckIndex >= total){
-        showToast("1周クリア！ 続けます", true);
-      }
-
       nextAfter(420);
     }
 
@@ -707,14 +691,30 @@
       score = 0;
       streak = 0;
       life = 3;
+      correctCount = 0;
+
       paused = false;
       running = true;
+
       overlay.style.display = "none";
 
-      lastDisplay = "";
-      refillDeck();
-
+      buildSession();
+      renderHud();
       spawn();
+    }
+
+    function clearGame(){
+      running = false;
+      paused = false;
+      setButtonsEnabled(false);
+
+      overlayTitle.textContent = "10問おわり！";
+      overlayDesc.innerHTML =
+        "正解: <b>" + correctCount + "</b> / " + SESSION_COUNT + "<br/>" +
+        "SCORE: <b>" + score + "</b><br/>" +
+        "もう一度やる場合は開始を押してください。";
+      startBtn.textContent = "もう一度";
+      overlay.style.display = "grid";
     }
 
     function gameOver(){
@@ -723,7 +723,10 @@
       setButtonsEnabled(false);
 
       overlayTitle.textContent = "ゲームオーバー";
-      overlayDesc.innerHTML = "SCORE: <b>" + score + "</b><br/>もう一度やる場合は開始を押してください。";
+      overlayDesc.innerHTML =
+        "正解: <b>" + correctCount + "</b> / " + SESSION_COUNT + "<br/>" +
+        "SCORE: <b>" + score + "</b><br/>" +
+        "もう一度やる場合は開始を押してください。";
       startBtn.textContent = "もう一度";
       overlay.style.display = "grid";
     }
@@ -736,7 +739,8 @@
 
       overlayTitle.textContent = "スタート";
       overlayDesc.innerHTML =
-        "150問をシャッフルして、1周するまで同じ問題は出ません。<br/>正しい「よみ」をタップしてください（間違いでライフ-1）。";
+        "150問の中からランダムに10問を選んで出題します（10問内は重複しません）。<br/>" +
+        "正しい「よみ」をタップしてください（間違いでライフ-1）。";
       startBtn.textContent = "開始";
       overlay.style.display = "grid";
 
@@ -744,16 +748,13 @@
       c0.textContent = "-"; c1.textContent = "-"; c2.textContent = "-";
       c0.style.fontSize = "34px"; c1.style.fontSize = "34px"; c2.style.fontSize = "34px";
 
-      score = 0; streak = 0; life = 3;
-
-      deck = [];
-      deckIndex = 0;
-      lastDisplay = "";
+      score = 0; streak = 0; life = 3; correctCount = 0;
+      session = []; qIndex = 0;
 
       renderHud();
     }
 
-    // 入力
+    /* 入力 */
     c0.addEventListener("click", function(){ judge(c0.textContent); });
     c1.addEventListener("click", function(){ judge(c1.textContent); });
     c2.addEventListener("click", function(){ judge(c2.textContent); });
@@ -768,7 +769,7 @@
     resetBtn.addEventListener("click", function(){ resetAll(); });
     startBtn.addEventListener("click", function(){ start(); });
 
-    // 初期化
+    /* 初期化 */
     setButtonsEnabled(false);
     renderHud();
   </script>
