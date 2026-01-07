@@ -1,6 +1,9 @@
 <!--
-[JST 2026-01-04 11:20]  kanji_quiz_150q_big_3row_10q.html
+[JST 2026-01-07 17:00]  kanji_quiz_150q_big_3row_10q_v2.html
 漢字よみクイズ（落下なし / 150問からランダム10問 / 重複なし / 答え3行）
+追加変更:
+  - 不正解時に「正解: ○○」を表示
+  - 終了/開始オーバーレイは半透明を廃止し、背景を完全不透明（背面を見せない）
 -->
 <!doctype html>
 <html lang="ja">
@@ -142,10 +145,13 @@
       pointer-events:none;
       z-index: 10;
       white-space: nowrap;
+      max-width: calc(100% - 24px);
+      overflow:hidden;
+      text-overflow: ellipsis;
     }
     .toast.show{
       opacity:1;
-      animation: toastFade 850ms ease-out forwards;
+      animation: toastFade 900ms ease-out forwards;
     }
     .toast.ok{
       border-color: rgba(120,170,255,0.35);
@@ -234,13 +240,13 @@
     }
     .miniBtn:active{ transform: translateY(1px); }
 
-    /* overlay */
+    /* overlay（★完全不透明に変更：背面を見せない） */
     .overlay{
       position:absolute;
       inset:0;
       display:grid;
       place-items:center;
-      background: rgba(0,0,0,0.45);
+      background: var(--bg); /* ★不透明 */
       z-index: 20;
     }
     .overlayCard{
@@ -345,185 +351,258 @@
        150問（前コードの問題を使用）
        ========================= */
     var QUESTIONS = [
-      { display: "理解", correct: "りかい", wrong: ["りけい","りがい"] },
-      { display: "改善", correct: "かいぜん", wrong: ["かいせん","かいざん"] },
-      { display: "必要", correct: "ひつよう", wrong: ["ひっよう","ひつやく"] },
-      { display: "準備", correct: "じゅんび", wrong: ["じゅんぴ","しゅんび"] },
-      { display: "結果", correct: "けっか", wrong: ["けつか","けっが"] },
+// 中学校で学ぶ範囲の語彙（熟語中心）150問：{ display, correct, wrong } 形式
+  { display: "旅行", correct: "りょこう", wrong: ["りょごう","りょうこう"] },
+  { display: "希望", correct: "きぼう", wrong: ["きほう","きぼ"] },
+  { display: "努力", correct: "どりょく", wrong: ["どりく","どりょう"] },
+  { display: "必要", correct: "ひつよう", wrong: ["ひっよう","ひつやく"] },
+  { display: "成功", correct: "せいこう", wrong: ["せいごう","しょうこう"] },
 
-      { display: "予想", correct: "よそう", wrong: ["よぞう","ようそう"] },
-      { display: "影響", correct: "えいきょう", wrong: ["えきょう","けいきょう"] },
-      { display: "対象", correct: "たいしょう", wrong: ["だいしょう","たいぞう"] },
-      { display: "協力", correct: "きょうりょく", wrong: ["きょうりく","きょうろく"] },
-      { display: "詳細", correct: "しょうさい", wrong: ["しょうざい","じょうさい"] },
+  { display: "失敗", correct: "しっぱい", wrong: ["しつぱい","しんぱい"] },
+  { display: "準備", correct: "じゅんび", wrong: ["じゅんぴ","しゅんび"] },
+  { display: "確認", correct: "かくにん", wrong: ["かくねん","かっくにん"] },
+  { display: "計画", correct: "けいかく", wrong: ["けいがく","けいかつ"] },
+  { display: "実行", correct: "じっこう", wrong: ["じつこう","じっごう"] },
 
-      { display: "確認", correct: "かくにん", wrong: ["かくねん","かっくにん"] },
-      { display: "提案", correct: "ていあん", wrong: ["ていなん","たいあん"] },
-      { display: "実施", correct: "じっし", wrong: ["じつし","じっせ"] },
-      { display: "状況", correct: "じょうきょう", wrong: ["じょきょう","しょうきょう"] },
-      { display: "計画", correct: "けいかく", wrong: ["けいがく","けいかつ"] },
+  { display: "説明", correct: "せつめい", wrong: ["せつみょう","せいめい"] },
+  { display: "記録", correct: "きろく", wrong: ["きろう","きろ"] },
+  { display: "情報", correct: "じょうほう", wrong: ["じょうぼう","しょうほう"] },
+  { display: "意見", correct: "いけん", wrong: ["いげん","いこん"] },
+  { display: "判断", correct: "はんだん", wrong: ["はんたん","ばんだん"] },
 
-      { display: "参加", correct: "さんか", wrong: ["さんが","さんけ"] },
-      { display: "連絡", correct: "れんらく", wrong: ["れんりゃく","れんろく"] },
-      { display: "増加", correct: "ぞうか", wrong: ["そうか","ぞうが"] },
-      { display: "減少", correct: "げんしょう", wrong: ["げんじょう","げんぞう"] },
-      { display: "成功", correct: "せいこう", wrong: ["せいごう","しょうこう"] },
+  { display: "地理", correct: "ちり", wrong: ["じり","ちれい"] },
+  { display: "歴史", correct: "れきし", wrong: ["れきじ","りきし"] },
+  { display: "社会", correct: "しゃかい", wrong: ["じゃかい","しゃがい"] },
+  { display: "理科", correct: "りか", wrong: ["りが","りけ"] },
+  { display: "数学", correct: "すうがく", wrong: ["すうかく","すうごく"] },
 
-      { display: "失敗", correct: "しっぱい", wrong: ["しつぱい","しんぱい"] },
-      { display: "努力", correct: "どりょく", wrong: ["どりく","どりょう"] },
-      { display: "緊張", correct: "きんちょう", wrong: ["きんしょう","きんじょう"] },
-      { display: "判断", correct: "はんだん", wrong: ["はんたん","ばんだん"] },
-      { display: "発言", correct: "はつげん", wrong: ["はっげん","はつけん"] },
+  { display: "英語", correct: "えいご", wrong: ["えいこ","えいごう"] },
+  { display: "国語", correct: "こくご", wrong: ["こくこ","こっご"] },
+  { display: "美術", correct: "びじゅつ", wrong: ["びしゅつ","びじつ"] },
+  { display: "音楽", correct: "おんがく", wrong: ["おんかく","おんごく"] },
+  { display: "体育", correct: "たいいく", wrong: ["たいく","たいえく"] },
 
-      { display: "証明", correct: "しょうめい", wrong: ["せいめい","しょうみょう"] },
-      { display: "関係", correct: "かんけい", wrong: ["かんげい","かんけ"] },
-      { display: "現在", correct: "げんざい", wrong: ["げんさい","けんざい"] },
-      { display: "将来", correct: "しょうらい", wrong: ["しょうれい","そうらい"] },
-      { display: "世紀", correct: "せいき", wrong: ["せき","せいぎ"] },
+  { display: "学習", correct: "がくしゅう", wrong: ["がくしゅ","がくしょう"] },
+  { display: "宿題", correct: "しゅくだい", wrong: ["しゅくたい","じゅくだい"] },
+  { display: "授業", correct: "じゅぎょう", wrong: ["じゅきょう","しゅぎょう"] },
+  { display: "試験", correct: "しけん", wrong: ["しげん","しかん"] },
+  { display: "成績", correct: "せいせき", wrong: ["せいぜき","せいしゃく"] },
 
-      { display: "伝統", correct: "でんとう", wrong: ["てんとう","でんどう"] },
-      { display: "科学", correct: "かがく", wrong: ["かくが","かごく"] },
-      { display: "技術", correct: "ぎじゅつ", wrong: ["きじゅつ","ぎじつ"] },
-      { display: "文化", correct: "ぶんか", wrong: ["もんか","ぶんが"] },
-      { display: "経済", correct: "けいざい", wrong: ["けいさい","きょうざい"] },
+  { display: "出席", correct: "しゅっせき", wrong: ["しゅつせき","しっせき"] },
+  { display: "欠席", correct: "けっせき", wrong: ["けつせき","けっしき"] },
+  { display: "連絡", correct: "れんらく", wrong: ["れんりゃく","れんろく"] },
+  { display: "相談", correct: "そうだん", wrong: ["そうたん","しょうだん"] },
+  { display: "提出", correct: "ていしゅつ", wrong: ["ていしゅ","ていじゅつ"] },
 
-      { display: "貿易", correct: "ぼうえき", wrong: ["ぼういき","ほうえき"] },
-      { display: "政治", correct: "せいじ", wrong: ["せいし","しょうじ"] },
-      { display: "法律", correct: "ほうりつ", wrong: ["ほうりち","ほうれつ"] },
-      { display: "議論", correct: "ぎろん", wrong: ["きろん","ぎりん"] },
-      { display: "承認", correct: "しょうにん", wrong: ["じょうにん","しょうりん"] },
+  { display: "研究", correct: "けんきゅう", wrong: ["けんきょう","げんきゅう"] },
+  { display: "発表", correct: "はっぴょう", wrong: ["はつひょう","はっびょう"] },
+  { display: "発見", correct: "はっけん", wrong: ["はつけん","はっげん"] },
+  { display: "観察", correct: "かんさつ", wrong: ["かんざつ","けんさつ"] },
+  { display: "実験", correct: "じっけん", wrong: ["じつけん","しっけん"] },
 
-      { display: "適切", correct: "てきせつ", wrong: ["てきぜつ","できせつ"] },
-      { display: "危険", correct: "きけん", wrong: ["ぎけん","きがん"] },
-      { display: "安全", correct: "あんぜん", wrong: ["あんせん","あんぜい"] },
-      { display: "健康", correct: "けんこう", wrong: ["けんごう","きんこう"] },
-      { display: "食品", correct: "しょくひん", wrong: ["しょくびん","そくひん"] },
+  { display: "結果", correct: "けっか", wrong: ["けつか","けっが"] },
+  { display: "原因", correct: "げんいん", wrong: ["げんえん","けんいん"] },
+  { display: "理由", correct: "りゆう", wrong: ["りゆ","りよう"] },
+  { display: "目的", correct: "もくてき", wrong: ["もくてい","ぼくてき"] },
+  { display: "方法", correct: "ほうほう", wrong: ["ほうぼう","ほうぽう"] },
 
-      { display: "環境", correct: "かんきょう", wrong: ["かんけい","かんぎょう"] },
-      { display: "地域", correct: "ちいき", wrong: ["ちえき","じいき"] },
-      { display: "交通", correct: "こうつう", wrong: ["こうづう","こうとう"] },
-      { display: "事故", correct: "じこ", wrong: ["しこ","じご"] },
-      { display: "救助", correct: "きゅうじょ", wrong: ["きゅうしょ","きゅうじゅ"] },
+  { display: "比較", correct: "ひかく", wrong: ["びかく","ひがく"] },
+  { display: "関係", correct: "かんけい", wrong: ["かんげい","かんけ"] },
+  { display: "条件", correct: "じょうけん", wrong: ["じょけん","しょうけん"] },
+  { display: "変化", correct: "へんか", wrong: ["へんが","べんか"] },
+  { display: "増加", correct: "ぞうか", wrong: ["そうか","ぞうが"] },
 
-      { display: "顕著", correct: "けんちょ", wrong: ["けんしょ","けんちゅ"] },
-      { display: "措置", correct: "そち", wrong: ["しょち","そうち"] },
-      { display: "概念", correct: "がいねん", wrong: ["かいねん","がいめん"] },
-      { display: "吟味", correct: "ぎんみ", wrong: ["きんみ","ぎんび"] },
-      { display: "把握", correct: "はあく", wrong: ["はくあ","ばあく"] },
+  { display: "減少", correct: "げんしょう", wrong: ["げんじょう","けんしょう"] },
+  { display: "特徴", correct: "とくちょう", wrong: ["とくじょう","どくちょう"] },
+  { display: "重要", correct: "じゅうよう", wrong: ["しゅうよう","じゅよう"] },
+  { display: "必要", correct: "ひつよう", wrong: ["ひっよう","ひつやく"] },
+  { display: "大切", correct: "たいせつ", wrong: ["だいせつ","たいぜつ"] },
 
-      { display: "妥当", correct: "だとう", wrong: ["たとう","だどう"] },
-      { display: "遵守", correct: "じゅんしゅ", wrong: ["じゅんす","しゅんしゅ"] },
-      { display: "是正", correct: "ぜせい", wrong: ["ぜいせい","せせい"] },
-      { display: "根拠", correct: "こんきょ", wrong: ["こんこ","こんけい"] },
-      { display: "見解", correct: "けんかい", wrong: ["けんがい","げんかい"] },
+  { display: "適切", correct: "てきせつ", wrong: ["てきぜつ","できせつ"] },
+  { display: "安全", correct: "あんぜん", wrong: ["あんせん","あんぜい"] },
+  { display: "危険", correct: "きけん", wrong: ["ぎけん","きがん"] },
+  { display: "注意", correct: "ちゅうい", wrong: ["ちゅい","ちょうい"] },
+  { display: "確認", correct: "かくにん", wrong: ["かくねん","かっくにん"] },
 
-      { display: "懸念", correct: "けねん", wrong: ["けんねん","けれん"] },
-      { display: "模索", correct: "もさく", wrong: ["もさつ","もさっ"] },
-      { display: "促進", correct: "そくしん", wrong: ["しょくしん","そっしん"] },
-      { display: "精査", correct: "せいさ", wrong: ["せいしゃ","しょうさ"] },
-      { display: "担保", correct: "たんぽ", wrong: ["たんぼ","だんぽ"] },
+  { display: "連続", correct: "れんぞく", wrong: ["れんそく","れんづく"] },
+  { display: "継続", correct: "けいぞく", wrong: ["けいそく","けいづく"] },
+  { display: "途中", correct: "とちゅう", wrong: ["とじゅう","どちゅう"] },
+  { display: "開始", correct: "かいし", wrong: ["かいじ","がいし"] },
+  { display: "終了", correct: "しゅうりょう", wrong: ["しゅりょう","しゅうよう"] },
 
-      { display: "抽象", correct: "ちゅうしょう", wrong: ["ちゅしょう","ちゅうぞう"] },
-      { display: "優遇", correct: "ゆうぐう", wrong: ["ゆうきゅう","ゆうぐ"] },
-      { display: "抑制", correct: "よくせい", wrong: ["おくせい","よくさい"] },
-      { display: "訂正", correct: "ていせい", wrong: ["ていしょう","てせい"] },
-      { display: "誤差", correct: "ごさ", wrong: ["こさ","ごしゃ"] },
+  { display: "以上", correct: "いじょう", wrong: ["いしょう","いじょ"] },
+  { display: "以下", correct: "いか", wrong: ["いが","いけ"] },
+  { display: "全体", correct: "ぜんたい", wrong: ["ぜんだい","せんたい"] },
+  { display: "部分", correct: "ぶぶん", wrong: ["ふぶん","ぶもん"] },
+  { display: "中心", correct: "ちゅうしん", wrong: ["ちゅうじん","じゅうしん"] },
 
-      { display: "逸脱", correct: "いつだつ", wrong: ["いったつ","いつたつ"] },
-      { display: "偏見", correct: "へんけん", wrong: ["へんげん","へいけん"] },
-      { display: "傾向", correct: "けいこう", wrong: ["けんこう","けいごう"] },
-      { display: "紛争", correct: "ふんそう", wrong: ["ふんそう(濁音なし)","ふんぞう"] },
-      { display: "統治", correct: "とうち", wrong: ["とうじ","とおち"] },
+  { display: "周辺", correct: "しゅうへん", wrong: ["しゅへん","しゅうべん"] },
+  { display: "方向", correct: "ほうこう", wrong: ["ほうごう","ぼうこう"] },
+  { display: "位置", correct: "いち", wrong: ["いじ","いっち"] },
+  { display: "範囲", correct: "はんい", wrong: ["はんえ","ばんい"] },
+  { display: "規則", correct: "きそく", wrong: ["ぎそく","きぞく"] },
 
-      { display: "施策", correct: "しさく", wrong: ["しさっ","せさく"] },
-      { display: "審査", correct: "しんさ", wrong: ["しんざ","じんさ"] },
-      { display: "迅速", correct: "じんそく", wrong: ["しんそく","じんぞく"] },
-      { display: "慎重", correct: "しんちょう", wrong: ["しんじょう","しんちょ"] },
-      { display: "緩和", correct: "かんわ", wrong: ["がんわ","かんば"] },
+  { display: "法律", correct: "ほうりつ", wrong: ["ほうりち","ほうれつ"] },
+  { display: "権利", correct: "けんり", wrong: ["げんり","けんりょ"] },
+  { display: "義務", correct: "ぎむ", wrong: ["きむ","ぎぶ"] },
+  { display: "責任", correct: "せきにん", wrong: ["せいにん","せきねん"] },
+  { display: "自由", correct: "じゆう", wrong: ["しゆう","じよう"] },
 
-      { display: "妨害", correct: "ぼうがい", wrong: ["ほうがい","ぼうけい"] },
-      { display: "譲歩", correct: "じょうほ", wrong: ["じょうぶ","しょうほ"] },
-      { display: "補償", correct: "ほしょう", wrong: ["ほそう","ほじょう"] },
-      { display: "賠償", correct: "ばいしょう", wrong: ["はいしょう","ばいそう"] },
-      { display: "損害", correct: "そんがい", wrong: ["そんけい","そんだい"] },
+  { display: "平等", correct: "びょうどう", wrong: ["ひょうどう","びょうとう"] },
+  { display: "公平", correct: "こうへい", wrong: ["こうべい","こうへ"] },
+  { display: "正義", correct: "せいぎ", wrong: ["せいき","しょうぎ"] },
+  { display: "社会", correct: "しゃかい", wrong: ["じゃかい","しゃがい"] },
+  { display: "政治", correct: "せいじ", wrong: ["せいし","しょうじ"] },
 
-      { display: "徴収", correct: "ちょうしゅう", wrong: ["ちょうじゅう","ちょうしゅ"] },
-      { display: "免除", correct: "めんじょ", wrong: ["めんしょ","めんじゅ"] },
-      { display: "履歴", correct: "りれき", wrong: ["りりき","れきれき"] },
-      { display: "崩壊", correct: "ほうかい", wrong: ["くずかい","ほうがい"] },
-      { display: "概略", correct: "がいりゃく", wrong: ["がいらく","かいりゃく"] },
+  { display: "経済", correct: "けいざい", wrong: ["けいさい","きょうざい"] },
+  { display: "産業", correct: "さんぎょう", wrong: ["さんきょう","ざんぎょう"] },
+  { display: "農業", correct: "のうぎょう", wrong: ["のうきょう","のうごう"] },
+  { display: "工業", correct: "こうぎょう", wrong: ["こうきょう","こうごう"] },
+  { display: "商業", correct: "しょうぎょう", wrong: ["しょうきょう","じょうぎょう"] },
 
-      { display: "即座", correct: "そくざ", wrong: ["そくさ","しょくざ"] },
-      { display: "堅実", correct: "けんじつ", wrong: ["かたじつ","けいじつ"] },
-      { display: "到達", correct: "とうたつ", wrong: ["どうたつ","とうだつ"] },
-      { display: "継続", correct: "けいぞく", wrong: ["けいそく","けいづく"] },
-      { display: "推移", correct: "すいい", wrong: ["すい","すいえい"] },
+  { display: "貿易", correct: "ぼうえき", wrong: ["ぼういき","ほうえき"] },
+  { display: "資源", correct: "しげん", wrong: ["しけん","じげん"] },
+  { display: "人口", correct: "じんこう", wrong: ["しんこう","じんごう"] },
+  { display: "国際", correct: "こくさい", wrong: ["こくざい","こくせい"] },
+  { display: "関係", correct: "かんけい", wrong: ["かんげい","かんけ"] },
 
-      { display: "顧問", correct: "こもん", wrong: ["くもん","こぼん"] },
-      { display: "奨励", correct: "しょうれい", wrong: ["しょうりょう","しょうらい"] },
-      { display: "自粛", correct: "じしゅく", wrong: ["じしゅう","ししゅく"] },
-      { display: "慈善", correct: "じぜん", wrong: ["しぜん","じせん"] },
-      { display: "脅威", correct: "きょうい", wrong: ["きょい","きょうえい"] },
+  { display: "協力", correct: "きょうりょく", wrong: ["きょうりく","きょうろく"] },
+  { display: "競争", correct: "きょうそう", wrong: ["けんそう","きょうぞう"] },
+  { display: "戦争", correct: "せんそう", wrong: ["せんぞう","ぜんそう"] },
+  { display: "平和", correct: "へいわ", wrong: ["へいば","へいが"] },
+  { display: "条約", correct: "じょうやく", wrong: ["じょやく","しょうやく"] },
 
-      { display: "憂慮", correct: "ゆうりょ", wrong: ["ゆうろ","ゆりょ"] },
-      { display: "払拭", correct: "ふっしょく", wrong: ["ふつしょく","はらしょく"] },
-      { display: "看過", correct: "かんか", wrong: ["かんが","けんか"] },
-      { display: "黙認", correct: "もくにん", wrong: ["もくねん","ぼくにん"] },
-      { display: "検証", correct: "けんしょう", wrong: ["けんせい","けんじょう"] },
+  { display: "文化", correct: "ぶんか", wrong: ["もんか","ぶんが"] },
+  { display: "伝統", correct: "でんとう", wrong: ["てんとう","でんどう"] },
+  { display: "宗教", correct: "しゅうきょう", wrong: ["しゅきょう","しゅうぎょう"] },
+  { display: "芸術", correct: "げいじゅつ", wrong: ["けいじゅつ","げいじつ"] },
+  { display: "文学", correct: "ぶんがく", wrong: ["もんがく","ぶんかく"] },
 
-      { display: "踏襲", correct: "とうしゅう", wrong: ["ふしゅう","とうしゅ"] },
-      { display: "示唆", correct: "しさ", wrong: ["ししゃ","じさ"] },
-      { display: "斡旋", correct: "あっせん", wrong: ["あつせん","あっぜん"] },
-      { display: "醸成", correct: "じょうせい", wrong: ["じょうせん","しょうせい"] },
-      { display: "捏造", correct: "ねつぞう", wrong: ["ねっそう","でつぞう"] },
+  { display: "表現", correct: "ひょうげん", wrong: ["ひょうけん","びょうげん"] },
+  { display: "感想", correct: "かんそう", wrong: ["かんぞう","けんそう"] },
+  { display: "意欲", correct: "いよく", wrong: ["いよ","いよう"] },
+  { display: "集中", correct: "しゅうちゅう", wrong: ["しゅちゅう","しゅうじゅう"] },
+  { display: "練習", correct: "れんしゅう", wrong: ["れんしょう","れんしゅ"] },
 
-      { display: "恣意", correct: "しい", wrong: ["しぎ","じい"] },
-      { display: "誹謗", correct: "ひぼう", wrong: ["ひぼ","ひもう"] },
-      { display: "中傷", correct: "ちゅうしょう", wrong: ["ちゅしょう","ちゅうじょう"] },
-      { display: "稟議", correct: "りんぎ", wrong: ["りんき","ひんぎ"] },
-      { display: "折衝", correct: "せっしょう", wrong: ["おっしょう","せつしょう"] },
+  { display: "反省", correct: "はんせい", wrong: ["はんしょう","ばんせい"] },
+  { display: "改善", correct: "かいぜん", wrong: ["かいせん","かいざん"] },
+  { display: "提案", correct: "ていあん", wrong: ["ていなん","たいあん"] },
+  { display: "実現", correct: "じつげん", wrong: ["じっげん","じつけん"] },
+  { display: "完成", correct: "かんせい", wrong: ["かんぜい","けんせい"] },
 
-      { display: "渉外", correct: "しょうがい", wrong: ["しょうげ","しょうかい"] },
-      { display: "精緻", correct: "せいち", wrong: ["せいし","しょうち"] },
-      { display: "端緒", correct: "たんしょ", wrong: ["たんちょ","だんしょ"] },
-      { display: "帰趨", correct: "きすう", wrong: ["きしゅ","きす"] },
-      { display: "趨勢", correct: "すうせい", wrong: ["しゅせい","すせい"] },
+  { display: "希望", correct: "きぼう", wrong: ["きほう","きぼ"] },
+  { display: "将来", correct: "しょうらい", wrong: ["しょうれい","そうらい"] },
+  { display: "現在", correct: "げんざい", wrong: ["げんさい","けんざい"] },
+  { display: "過去", correct: "かこ", wrong: ["がこ","かご"] },
+  { display: "未来", correct: "みらい", wrong: ["みら","みらえ"] },
 
-      { display: "逼迫", correct: "ひっぱく", wrong: ["ひつぱく","ひょっぱく"] },
-      { display: "逼塞", correct: "ひっそく", wrong: ["ひっそ","ひつそく"] },
-      { display: "払底", correct: "ふってい", wrong: ["ふって","はらてい"] },
-      { display: "逼真", correct: "ひっしん", wrong: ["ひっじん","ひつしん"] },
-      { display: "緻密", correct: "ちみつ", wrong: ["ちみつ(濁音なし)","しみつ"] },
+  { display: "成長", correct: "せいちょう", wrong: ["せいしょう","じょうちょう"] },
+  { display: "発達", correct: "はったつ", wrong: ["はつたつ","はっだつ"] },
+  { display: "進歩", correct: "しんぽ", wrong: ["しんぼ","じんぽ"] },
+  { display: "後退", correct: "こうたい", wrong: ["こうだい","ごうたい"] },
+  { display: "変化", correct: "へんか", wrong: ["へんが","べんか"] },
 
-      { display: "瑕疵", correct: "かし", wrong: ["かじ","けし"] },
-      { display: "毀損", correct: "きそん", wrong: ["ぎそん","きざん"] },
-      { display: "罹患", correct: "りかん", wrong: ["りがん","れいかん"] },
-      { display: "漸進", correct: "ぜんしん", wrong: ["ざんしん","ぜんじん"] },
-      { display: "刹那", correct: "せつな", wrong: ["さつな","せつね"] },
+  { display: "記念", correct: "きねん", wrong: ["きれん","きめん"] },
+  { display: "経験", correct: "けいけん", wrong: ["けいげん","けんけん"] },
+  { display: "体験", correct: "たいけん", wrong: ["だいけん","たいげん"] },
+  { display: "発言", correct: "はつげん", wrong: ["はっげん","はつけん"] },
+  { display: "発表", correct: "はっぴょう", wrong: ["はつひょう","はっびょう"] },
 
-      { display: "矯正", correct: "きょうせい", wrong: ["きょせい","きょうさい"] },
-      { display: "矯激", correct: "きょうげき", wrong: ["きょうき","きょげき"] },
-      { display: "慫慂", correct: "しょうよう", wrong: ["そうよう","しょうゆう"] },
-      { display: "蹂躙", correct: "じゅうりん", wrong: ["じゅりん","しゅうりん"] },
-      { display: "慟哭", correct: "どうこく", wrong: ["とうこく","どうごく"] },
+  { display: "討論", correct: "とうろん", wrong: ["とうりん","どうろん"] },
+  { display: "議論", correct: "ぎろん", wrong: ["きろん","ぎりん"] },
+  { display: "意識", correct: "いしき", wrong: ["いじき","いせき"] },
+  { display: "理解", correct: "りかい", wrong: ["りけい","りがい"] },
+  { display: "納得", correct: "なっとく", wrong: ["なつとく","なっどく"] },
 
-      { display: "倨傲", correct: "きょごう", wrong: ["こごう","きょうごう"] },
-      { display: "桎梏", correct: "しっこく", wrong: ["てつこく","しつこく"] },
-      { display: "逡巡", correct: "しゅんじゅん", wrong: ["しゅんじゅ","すんじゅん"] },
-      { display: "蹉跌", correct: "さてつ", wrong: ["さてっ","さてい"] },
-      { display: "憔悴", correct: "しょうすい", wrong: ["しょうさい","しょうずい"] },
+  { display: "知識", correct: "ちしき", wrong: ["じしき","ちせき"] },
+  { display: "常識", correct: "じょうしき", wrong: ["じょしき","しょうしき"] },
+  { display: "学問", correct: "がくもん", wrong: ["がくもん(促音)","がくぼん"] },
+  { display: "問題", correct: "もんだい", wrong: ["もんたい","もんでい"] },
+  { display: "解決", correct: "かいけつ", wrong: ["かいけち","がいけつ"] },
 
-      { display: "慇懃", correct: "いんぎん", wrong: ["いんけん","えんぎん"] },
-      { display: "慄然", correct: "りつぜん", wrong: ["りっぜん","りつねん"] },
-      { display: "慟然", correct: "どうぜん", wrong: ["とうぜん","どうねん"] },
-      { display: "狼狽", correct: "ろうばい", wrong: ["ろうはい","ろうべい"] },
-      { display: "憂鬱", correct: "ゆううつ", wrong: ["ゆうつ","ゆういつ"] },
+  { display: "分析", correct: "ぶんせき", wrong: ["もんせき","ぶんぜき"] },
+  { display: "評価", correct: "ひょうか", wrong: ["ひょうが","びょうか"] },
+  { display: "改善", correct: "かいぜん", wrong: ["かいせん","かいざん"] },
+  { display: "発想", correct: "はっそう", wrong: ["はつそう","はっぞう"] },
+  { display: "創造", correct: "そうぞう", wrong: ["そうそう","そうぞ"] },
 
-      { display: "饒舌", correct: "じょうぜつ", wrong: ["にょうぜつ","じょうせつ"] },
-      { display: "慳貪", correct: "けんどん", wrong: ["けんたん","かんどん"] },
-      { display: "矜持", correct: "きょうじ", wrong: ["きんじ","こんじ"] },
-      { display: "刮目", correct: "かつもく", wrong: ["かっもく","かつめ"] },
-      { display: "僥倖", correct: "ぎょうこう", wrong: ["きょうこう","ぎょうこ"] }
+  { display: "想像", correct: "そうぞう", wrong: ["そうそう","しょうぞう"] },
+  { display: "表面", correct: "ひょうめん", wrong: ["ひょめん","びょうめん"] },
+  { display: "内部", correct: "ないぶ", wrong: ["だいぶ","ないぼ"] },
+  { display: "外部", correct: "がいぶ", wrong: ["かいぶ","がいぼ"] },
+  { display: "内容", correct: "ないよう", wrong: ["だいよう","ないよ"] },
+
+  { display: "全力", correct: "ぜんりょく", wrong: ["ぜんりく","せんりょく"] },
+  { display: "協調", correct: "きょうちょう", wrong: ["きょうじょう","きょちょう"] },
+  { display: "対立", correct: "たいりつ", wrong: ["だいりつ","たいれつ"] },
+  { display: "合意", correct: "ごうい", wrong: ["こうい","ごい"] },
+  { display: "同意", correct: "どうい", wrong: ["とうい","どうえ"] },
+
+  { display: "選択", correct: "せんたく", wrong: ["せんだく","ぜんたく"] },
+  { display: "決定", correct: "けってい", wrong: ["けつてい","けって"] },
+  { display: "選挙", correct: "せんきょ", wrong: ["せんぎょ","せんこ"] },
+  { display: "投票", correct: "とうひょう", wrong: ["とうびょう","どうひょう"] },
+  { display: "代表", correct: "だいひょう", wrong: ["たいひょう","だいびょう"] },
+
+  { display: "国民", correct: "こくみん", wrong: ["こくめん","こくにん"] },
+  { display: "市民", correct: "しみん", wrong: ["じみん","しめん"] },
+  { display: "住民", correct: "じゅうみん", wrong: ["じゅうめん","しゅうみん"] },
+  { display: "地域", correct: "ちいき", wrong: ["ちえき","じいき"] },
+  { display: "地方", correct: "ちほう", wrong: ["じほう","ちぼう"] },
+
+  { display: "都市", correct: "とし", wrong: ["どし","とじ"] },
+  { display: "農村", correct: "のうそん", wrong: ["のうそ","のうぞん"] },
+  { display: "交通", correct: "こうつう", wrong: ["こうづう","こうとう"] },
+  { display: "事故", correct: "じこ", wrong: ["しこ","じご"] },
+  { display: "災害", correct: "さいがい", wrong: ["ざいがい","さいけい"] },
+
+  { display: "防災", correct: "ぼうさい", wrong: ["ほうさい","ぼうざい"] },
+  { display: "救助", correct: "きゅうじょ", wrong: ["きゅうしょ","きゅうじゅ"] },
+  { display: "医療", correct: "いりょう", wrong: ["いりょ","いりょう(拗音なし)"] },
+  { display: "健康", correct: "けんこう", wrong: ["けんごう","きんこう"] },
+  { display: "衛生", correct: "えいせい", wrong: ["えいぜい","えいしょう"] },
+
+  { display: "環境", correct: "かんきょう", wrong: ["かんけい","かんぎょう"] },
+  { display: "公害", correct: "こうがい", wrong: ["こうけい","こうが"] },
+  { display: "資源", correct: "しげん", wrong: ["しけん","じげん"] },
+  { display: "節約", correct: "せつやく", wrong: ["せつしゃく","せちやく"] },
+  { display: "再生", correct: "さいせい", wrong: ["ざいせい","さいぜい"] },
+
+  { display: "利用", correct: "りよう", wrong: ["りゆう","りよ"] },
+  { display: "使用", correct: "しよう", wrong: ["しゆう","しょよう"] },
+  { display: "応用", correct: "おうよう", wrong: ["おうよ","おおよう"] },
+  { display: "基礎", correct: "きそ", wrong: ["ぎそ","きぞ"] },
+  { display: "基本", correct: "きほん", wrong: ["ぎほん","きぼん"] },
+
+  { display: "発明", correct: "はつめい", wrong: ["はっめい","はつみょう"] },
+  { display: "発電", correct: "はつでん", wrong: ["はっでん","はつてん"] },
+  { display: "電気", correct: "でんき", wrong: ["てんき","でんぎ"] },
+  { display: "電池", correct: "でんち", wrong: ["てんち","でんじ"] },
+  { display: "科学", correct: "かがく", wrong: ["かくが","かごく"] },
+
+  { display: "技術", correct: "ぎじゅつ", wrong: ["きじゅつ","ぎじつ"] },
+  { display: "機械", correct: "きかい", wrong: ["ぎかい","きがい"] },
+  { display: "機能", correct: "きのう", wrong: ["ぎのう","きもう"] },
+  { display: "材料", correct: "ざいりょう", wrong: ["さいりょう","ざいよう"] },
+  { display: "燃料", correct: "ねんりょう", wrong: ["ねんよう","れんりょう"] },
+
+  { display: "温度", correct: "おんど", wrong: ["おんと","おんとう"] },
+  { display: "湿度", correct: "しつど", wrong: ["しつと","しっど"] },
+  { display: "気温", correct: "きおん", wrong: ["ぎおん","きおう"] },
+  { display: "天気", correct: "てんき", wrong: ["でんき","てんぎ"] },
+  { display: "季節", correct: "きせつ", wrong: ["ぎせつ","きぜつ"] },
+
+  { display: "春夏秋冬", correct: "しゅんかしゅうとう", wrong: ["しゅんかしゅとう","しゅんかしゅうと"] },
+  { display: "自然", correct: "しぜん", wrong: ["じぜん","しせん"] },
+  { display: "動物", correct: "どうぶつ", wrong: ["とうぶつ","どうぶち"] },
+  { display: "植物", correct: "しょくぶつ", wrong: ["しょくぶち","そくぶつ"] },
+  { display: "生物", correct: "せいぶつ", wrong: ["せいぶち","しょうぶつ"] },
+
+  { display: "体力", correct: "たいりょく", wrong: ["だいりょく","たいりく"] },
+  { display: "競技", correct: "きょうぎ", wrong: ["けんぎ","きょうき"] },
+  { display: "勝利", correct: "しょうり", wrong: ["じょうり","しょうりょ"] },
+  { display: "敗北", correct: "はいぼく", wrong: ["はいほく","ばいぼく"] },
+  { display: "記録", correct: "きろく", wrong: ["きろう","きろ"] }
     ];
 
     /* ===== 設定 ===== */
@@ -577,7 +656,7 @@
     function showToast(text, ok){
       toast.textContent = text;
       toast.className = "toast " + (ok ? "ok" : "ng") + " show";
-      setTimeout(function(){ toast.className = "toast"; }, 880);
+      setTimeout(function(){ toast.className = "toast"; }, 900);
     }
 
     function setButtonsEnabled(on){
@@ -674,7 +753,8 @@
       } else {
         streak = 0;
         life -= 1;
-        showToast("不正解 -1", false);
+        // ★不正解時：正解を表示
+        showToast("不正解 -1（正解: " + correct + "）", false);
       }
 
       renderHud();
