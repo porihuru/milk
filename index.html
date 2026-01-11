@@ -13,11 +13,11 @@
   <title>漢字よみクイズ（10問・3行）</title>
   <style>
     :root{
-      --bg:#0e1326;
-      --panel:rgba(255,255,255,0.06);
-      --panel2:rgba(255,255,255,0.10);
-      --text:rgba(255,255,255,0.92);
-      --muted:rgba(255,255,255,0.68);
+      --bg:#16233a;
+      --panel:rgba(255,255,255,0.08);
+      --panel2:rgba(255,255,255,0.14);
+      --text:rgba(255,255,255,0.95);
+      --muted:rgba(255,255,255,0.78);
       --shadow: 0 18px 55px rgba(0,0,0,0.35);
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -29,8 +29,8 @@
       height:100%;
       margin:0;
       background:
-        radial-gradient(1000px 600px at 20% 10%, rgba(120,170,255,0.14), transparent 55%),
-        radial-gradient(900px 600px at 90% 25%, rgba(255,90,120,0.10), transparent 55%),
+        radial-gradient(1000px 600px at 20% 10%, rgba(120,170,255,0.22), transparent 55%),
+        radial-gradient(900px 600px at 90% 25%, rgba(255,90,120,0.18), transparent 55%),
         var(--bg);
       color:var(--text);
       font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic", sans-serif;
@@ -108,7 +108,7 @@
       width:min(560px, 100%);
       border-radius:18px;
       padding:18px 16px;
-      background: rgba(0,0,0,0.26);
+      background: rgba(0,0,0,0.20);
       border:1px solid rgba(255,255,255,0.16);
       box-shadow: 0 18px 40px rgba(0,0,0,0.28);
       text-align:center;
@@ -240,13 +240,13 @@
     }
     .miniBtn:active{ transform: translateY(1px); }
 
-    /* overlay（★完全不透明に変更：背面を見せない） */
+    /* overlay（★少し透けさせる：背面がほのかに見える） */
     .overlay{
       position:absolute;
       inset:0;
       display:grid;
       place-items:center;
-      background: var(--bg); /* ★不透明 */
+      background: rgba(22,35,58,0.95);
       z-index: 20;
     }
     .overlayCard{
