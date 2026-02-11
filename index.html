@@ -1,6 +1,396 @@
 <!doctype html>
 <html lang="ja">
 <head>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牛乳注ぎゲーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 800px;
+            height: 100vh;
+            max-height: 800px;
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            padding: 15px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .score {
+            color: #667eea;
+        }
+        
+        .game-area {
+            flex: 1;
+            background: linear-gradient(to bottom, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+            min-height: 300px;
+        }
+        
+        .bottle-container {
+            position: absolute;
+            left: 3%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12%;
+            height: 40%;
+        }
+        
+        .bottle {
+            width: 80%;
+            height: 100%;
+            background: #90ee90;
+            border-radius: 0 0 30% 30%;
+            position: absolute;
+            left: 10%;
+            top: 0;
+            border: 2px solid #228b22;
+            transition: left 0.3s ease-in-out;
+        }
+        
+        .bottle.moving {
+            left: 50%;
+        }
+        
+        .bottle-cap {
+            width: 60%;
+            height: 12%;
+            background: #ff6b6b;
+            border-radius: 2px;
+            position: absolute;
+            left: 20%;
+            top: 0;
+        }
+        
+        .milk-level {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: rgba(135, 206, 235, 0.6);
+            transition: height 0.1s ease;
+        }
+        
+        .pouring {
+            position: absolute;
+            top: 0;
+            left: 55%;
+            width: 4%;
+            height: 0;
+            background: #87ceeb;
+            opacity: 0.8;
+            transition: height 0.05s ease;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        button {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+            min-height: 52px;
+            touch-action: manipulation;
+        }
+        
+        button:hover {
+            background: #5568d3;
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .status {
+            font-size: 16px;
+            color: #333;
+            text-align: center;
+            width: 100%;
+            padding: 0 10px;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+            z-index: 10;
+            max-width: 80%;
+        }
+        
+        .game-over.show {
+            display: block;
+        }
+        
+        .game-over h2 {
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+        
+        .game-over p {
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .game-over button {
+            font-size: 16px;
+            padding: 15px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 15px;
+                padding: 12px;
+                height: 100vh;
+            }
+            
+            .header {
+                font-size: 16px;
+                margin-bottom: 12px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .score {
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .game-area {
+                margin-bottom: 12px;
+            }
+            
+            .controls {
+                gap: 10px;
+            }
+            
+            button {
+                padding: 16px;
+                font-size: 16px;
+                min-height: 48px;
+            }
+            
+            .status {
+                font-size: 14px;
+            }
+            
+            .game-over {
+                padding: 25px;
+            }
+            
+            .game-over h2 {
+                font-size: 24px;
+            }
+            
+            .game-over p {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="score">スコア: <span id="score">0</span></div>
+            <div class="score">本数: <span id="count">0</span> / 10</div>
+        </div>
+        
+        <div class="game-area">
+            <div class="bottle-container">
+                <div class="bottle" id="bottle">
+                    <div class="bottle-cap"></div>
+                    <div class="milk-level" id="milkLevel"></div>
+                </div>
+            </div>
+            
+            <div class="pouring" id="pouring"></div>
+            
+            <div class="game-over" id="gameOver">
+                <h2>ゲームクリア！</h2>
+                <p>スコア: <span id="finalScore">0</span></p>
+                <button onclick="location.reload()">もう一度プレイ</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="status">
+                <span id="status">牛乳瓶を待機中...</span>
+            </div>
+            <button id="pourBtn" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" onclick="togglePour()">注ぐ</button>
+        </div>
+    </div>
+    
+    <script>
+        const BOTTLE_COUNT = 10;
+        const TARGET_MILK = 100;
+        const POUR_RATE = 2;
+        
+        let gameData = {
+            bottleCount: 0,
+            currentMilk: 0,
+            isPouring: false,
+            isPouringActive: false,
+            bottleState: 'waiting'
+        };
+        
+        let bottleElement = document.getElementById('bottle');
+        let pourElement = document.getElementById('pouring');
+        let milkLevelElement = document.getElementById('milkLevel');
+        let scoreElement = document.getElementById('score');
+        let countElement = document.getElementById('count');
+        let statusElement = document.getElementById('status');
+        let gameOverElement = document.getElementById('gameOver');
+        let pourBtn = document.getElementById('pourBtn');
+        
+        function startNewBottle() {
+            gameData.bottleCount++;
+            gameData.currentMilk = 0;
+            gameData.bottleState = 'incoming';
+            countElement.textContent = gameData.bottleCount;
+            statusElement.textContent = '牛乳瓶が移動中...';
+            
+            bottleElement.classList.add('moving');
+            
+            setTimeout(() => {
+                gameData.bottleState = 'ready';
+                statusElement.textContent = `注ぐボタンを押してください (${gameData.bottleCount}/${BOTTLE_COUNT})`;
+                pourBtn.disabled = false;
+            }, 600);
+        }
+        
+        function togglePour() {
+            if (gameData.bottleState !== 'ready') return;
+            
+            gameData.isPouringActive = !gameData.isPouringActive;
+            
+            if (gameData.isPouringActive) {
+                pour();
+            }
+        }
+        
+        function pour() {
+            if (!gameData.isPouringActive || gameData.bottleState !== 'ready') return;
+            
+            gameData.currentMilk += POUR_RATE;
+            pourElement.style.height = gameData.currentMilk * 1.5 + 'px';
+            milkLevelElement.style.height = gameData.currentMilk * 0.6 + 'px';
+            
+            if (gameData.currentMilk >= TARGET_MILK) {
+                endBottle();
+            } else {
+                requestAnimationFrame(pour);
+            }
+        }
+        
+        function endBottle() {
+            gameData.isPouringActive = false;
+            gameData.bottleState = 'ending';
+            pourBtn.disabled = true;
+            
+            const accuracy = Math.min(100, gameData.currentMilk);
+            const points = Math.round(accuracy);
+            const currentScore = parseInt(scoreElement.textContent) + points;
+            scoreElement.textContent = currentScore;
+            
+            statusElement.textContent = `スコア+${points} (合計: ${currentScore})`;
+            
+            if (gameData.bottleCount >= BOTTLE_COUNT) {
+                setTimeout(() => {
+                    document.getElementById('finalScore').textContent = currentScore;
+                    gameOverElement.classList.add('show');
+                }, 500);
+            } else {
+                setTimeout(() => {
+                    bottleElement.classList.remove('moving');
+                    pourElement.style.height = '0px';
+                    startNewBottle();
+                }, 1000);
+            }
+        }
+        
+        // スマホのタッチイベント
+        function handleTouchStart(event) {
+            event.preventDefault();
+            togglePour();
+        }
+        
+        function handleTouchEnd(event) {
+            event.preventDefault();
+            if (gameData.isPouringActive) {
+                togglePour();
+            }
+        }
+        
+        // キーボードイベント
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!gameData.isPouringActive) {
+                    togglePour();
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' && gameData.isPouringActive) {
+                togglePour();
+            }
+        });
+        
+        startNewBottle();
+    </script>
 </body>
 </html>
