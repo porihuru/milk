@@ -156,6 +156,14 @@
             padding: 0 10px;
         }
         
+        .version {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+        
         .game-over {
             position: absolute;
             top: 50%;
@@ -243,6 +251,7 @@
 </head>
 <body>
     <div class="container">
+        <div class="version">ver <span id="version">1.0.0</span></div>
         <div class="header">
             <div class="score">スコア: <span id="score">0</span></div>
             <div class="score">本数: <span id="count">0</span> / 10</div>
@@ -273,124 +282,11 @@
         </div>
     </div>
     
-    <script>
-        const BOTTLE_COUNT = 10;
-        const TARGET_MILK = 100;
-        const POUR_RATE = 2;
-        
-        let gameData = {
-            bottleCount: 0,
-            currentMilk: 0,
-            isPouring: false,
-            isPouringActive: false,
-            bottleState: 'waiting'
-        };
-        
-        let bottleElement = document.getElementById('bottle');
-        let pourElement = document.getElementById('pouring');
-        let milkLevelElement = document.getElementById('milkLevel');
-        let scoreElement = document.getElementById('score');
-        let countElement = document.getElementById('count');
-        let statusElement = document.getElementById('status');
-        let gameOverElement = document.getElementById('gameOver');
-        let pourBtn = document.getElementById('pourBtn');
-        
-        function startNewBottle() {
-            gameData.bottleCount++;
-            gameData.currentMilk = 0;
-            gameData.bottleState = 'incoming';
-            countElement.textContent = gameData.bottleCount;
-            statusElement.textContent = '牛乳瓶が移動中...';
-            
-            bottleElement.classList.add('moving');
-            
-            setTimeout(() => {
-                gameData.bottleState = 'ready';
-                statusElement.textContent = `注ぐボタンを押してください (${gameData.bottleCount}/${BOTTLE_COUNT})`;
-                pourBtn.disabled = false;
-            }, 600);
-        }
-        
-        function togglePour() {
-            if (gameData.bottleState !== 'ready') return;
-            
-            gameData.isPouringActive = !gameData.isPouringActive;
-            
-            if (gameData.isPouringActive) {
-                pour();
-            }
-        }
-        
-        function pour() {
-            if (!gameData.isPouringActive || gameData.bottleState !== 'ready') return;
-            
-            gameData.currentMilk += POUR_RATE;
-            pourElement.style.height = gameData.currentMilk * 1.5 + 'px';
-            milkLevelElement.style.height = gameData.currentMilk * 0.6 + 'px';
-            
-            if (gameData.currentMilk >= TARGET_MILK) {
-                endBottle();
-            } else {
-                requestAnimationFrame(pour);
-            }
-        }
-        
-        function endBottle() {
-            gameData.isPouringActive = false;
-            gameData.bottleState = 'ending';
-            pourBtn.disabled = true;
-            
-            const accuracy = Math.min(100, gameData.currentMilk);
-            const points = Math.round(accuracy);
-            const currentScore = parseInt(scoreElement.textContent) + points;
-            scoreElement.textContent = currentScore;
-            
-            statusElement.textContent = `スコア+${points} (合計: ${currentScore})`;
-            
-            if (gameData.bottleCount >= BOTTLE_COUNT) {
-                setTimeout(() => {
-                    document.getElementById('finalScore').textContent = currentScore;
-                    gameOverElement.classList.add('show');
-                }, 500);
-            } else {
-                setTimeout(() => {
-                    bottleElement.classList.remove('moving');
-                    pourElement.style.height = '0px';
-                    startNewBottle();
-                }, 1000);
-            }
-        }
-        
-        // スマホのタッチイベント
-        function handleTouchStart(event) {
-            event.preventDefault();
-            togglePour();
-        }
-        
-        function handleTouchEnd(event) {
-            event.preventDefault();
-            if (gameData.isPouringActive) {
-                togglePour();
-            }
-        }
-        
-        // キーボードイベント
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (!gameData.isPouringActive) {
-                    togglePour();
-                }
-            }
-        });
-        
-        document.addEventListener('keyup', (e) => {
-            if (e.code === 'Space' && gameData.isPouringActive) {
-                togglePour();
-            }
-        });
-        
-        startNewBottle();
-    </script>
+    <!-- Game Scripts -->
+    <script src="js/gameState.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/gameLogic.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
