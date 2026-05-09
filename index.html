@@ -1,292 +1,339 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>牛乳注ぎゲーム</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 10px;
-        }
-        
-        .container {
-            width: 100%;
-            max-width: 800px;
-            height: 100vh;
-            max-height: 800px;
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            padding: 15px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .score {
-            color: #667eea;
-        }
-        
-        .game-area {
-            flex: 1;
-            background: linear-gradient(to bottom, #e3f2fd 0%, #bbdefb 100%);
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 15px;
-            min-height: 300px;
-        }
-        
-        .bottle-container {
-            position: absolute;
-            left: 3%;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 12%;
-            height: 40%;
-        }
-        
-        .bottle {
-            width: 80%;
-            height: 100%;
-            background: #90ee90;
-            border-radius: 0 0 30% 30%;
-            position: absolute;
-            left: 10%;
-            top: 0;
-            border: 2px solid #228b22;
-            transition: left 0.3s ease-in-out;
-        }
-        
-        .bottle.moving {
-            left: 50%;
-        }
-        
-        .bottle-cap {
-            width: 60%;
-            height: 12%;
-            background: #ff6b6b;
-            border-radius: 2px;
-            position: absolute;
-            left: 20%;
-            top: 0;
-        }
-        
-        .milk-level {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: rgba(135, 206, 235, 0.6);
-            transition: height 0.1s ease;
-        }
-        
-        .pouring {
-            position: absolute;
-            top: 0;
-            left: 55%;
-            width: 4%;
-            height: 0;
-            background: #87ceeb;
-            opacity: 0.8;
-            transition: height 0.05s ease;
-        }
-        
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        button {
-            width: 100%;
-            padding: 18px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: #667eea;
-            color: white;
-            min-height: 52px;
-            touch-action: manipulation;
-        }
-        
-        button:hover {
-            background: #5568d3;
-        }
-        
-        button:active {
-            transform: scale(0.98);
-        }
-        
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .status {
-            font-size: 16px;
-            color: #333;
-            text-align: center;
-            width: 100%;
-            padding: 0 10px;
-        }
-        
-        .version {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 12px;
-            color: #999;
-        }
-        
-        .game-over {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            text-align: center;
-            display: none;
-            z-index: 10;
-            max-width: 80%;
-        }
-        
-        .game-over.show {
-            display: block;
-        }
-        
-        .game-over h2 {
-            font-size: 28px;
-            margin-bottom: 15px;
-        }
-        
-        .game-over p {
-            font-size: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .game-over button {
-            font-size: 16px;
-            padding: 15px;
-        }
-        
-        @media (max-width: 600px) {
-            .container {
-                border-radius: 15px;
-                padding: 12px;
-                height: 100vh;
-            }
-            
-            .header {
-                font-size: 16px;
-                margin-bottom: 12px;
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-            
-            .score {
-                flex: 1;
-                min-width: 150px;
-            }
-            
-            .game-area {
-                margin-bottom: 12px;
-            }
-            
-            .controls {
-                gap: 10px;
-            }
-            
-            button {
-                padding: 16px;
-                font-size: 16px;
-                min-height: 48px;
-            }
-            
-            .status {
-                font-size: 14px;
-            }
-            
-            .game-over {
-                padding: 25px;
-            }
-            
-            .game-over h2 {
-                font-size: 24px;
-            }
-            
-            .game-over p {
-                font-size: 18px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MILK FILL</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #12121e;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      color: #fff;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    h1 { margin-bottom: 12px; font-size: 22px; letter-spacing: 4px; }
+    canvas { border-radius: 10px; box-shadow: 0 8px 32px #0008; }
+    #hud { margin-top: 14px; display: flex; gap: 48px; font-size: 18px; }
+    #hud b { color: #ffd700; }
+    #btn {
+      margin-top: 16px;
+      padding: 14px 52px;
+      font-size: 20px; font-weight: bold;
+      border-radius: 50px;
+      border: 2px solid #fff;
+      background: #fff;
+      color: #12121e;
+      cursor: pointer;
+      touch-action: none;
+      transition: background .08s, transform .08s;
+    }
+    #btn.held { background: #bbb; transform: scale(.95); }
+    #hint { margin-top: 8px; font-size: 12px; color: #555; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="version">ver <span id="version">1.0.0</span></div>
-        <div class="header">
-            <div class="score">スコア: <span id="score">0</span></div>
-            <div class="score">本数: <span id="count">0</span> / 10</div>
-        </div>
-        
-        <div class="game-area">
-            <div class="bottle-container">
-                <div class="bottle" id="bottle">
-                    <div class="bottle-cap"></div>
-                    <div class="milk-level" id="milkLevel"></div>
-                </div>
-            </div>
-            
-            <div class="pouring" id="pouring"></div>
-            
-            <div class="game-over" id="gameOver">
-                <h2>ゲームクリア！</h2>
-                <p>スコア: <span id="finalScore">0</span></p>
-                <button onclick="location.reload()">もう一度プレイ</button>
-            </div>
-        </div>
-        
-        <div class="controls">
-            <div class="status">
-                <span id="status">牛乳瓶を待機中...</span>
-            </div>
-            <button id="pourBtn" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" onclick="togglePour()">注ぐ</button>
-        </div>
-    </div>
-    
-    <!-- Game Scripts -->
-    <script src="js/gameState.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/gameLogic.js"></script>
-    <script src="js/input.js"></script>
-    <script src="js/main.js"></script>
+  <h1>🍼 MILK FILL</h1>
+  <canvas id="c" width="600" height="360"></canvas>
+  <div id="hud">
+    <span>SCORE <b id="score">0</b></span>
+    <span>BOTTLES <b id="count">0</b></span>
+  </div>
+  <button id="btn">押して注ぐ</button>
+  <p id="hint">スペースキーでも操作できます</p>
+
+  <script>
+    const canvas = document.getElementById('c');
+    const ctx    = canvas.getContext('2d');
+    const W = 600, H = 360;
+
+    // ---- layout ----
+    const CONV_Y        = 295;
+    const BODY_W        = 56;
+    const BODY_H        = 88;
+    const NECK_W        = 20;
+    const NECK_H        = 26;
+    const BOTTLE_BOTTOM = CONV_Y;
+    const BODY_TOP      = BOTTLE_BOTTOM - BODY_H;   // 207
+    const BOTTLE_TOP    = BODY_TOP - NECK_H;         // 181
+    const DISP_X        = 300;
+    const NOZZLE_Y      = 88;
+    const ZONE          = 54;  // dispenser zone half-width
+
+    // ---- state ----
+    let pouring    = false;
+    let totalScore = 0;
+    let bottlesCnt = 0;
+    let speed      = 1.3;
+    let convOff    = 0;
+    let bottle     = spawn();
+    let popups     = [];
+
+    function spawn() {
+      return { x: W + 60, fill: 0, judged: false };
+    }
+
+    // ---- update ----
+    function update() {
+      convOff  = (convOff + speed) % 40;
+      bottle.x -= speed;
+
+      if (pouring && !bottle.judged && Math.abs(bottle.x - DISP_X) < ZONE) {
+        bottle.fill += 0.016;
+      }
+
+      if (!bottle.judged && bottle.x < DISP_X - ZONE - 4) {
+        judge(bottle);
+      }
+
+      if (bottle.x < -80) {
+        bottle = spawn();
+      }
+
+      popups.forEach(p => { p.y -= 1.4; p.alpha -= 0.017; });
+      popups = popups.filter(p => p.alpha > 0);
+    }
+
+    function judge(b) {
+      b.judged = true;
+      bottlesCnt++;
+      const f = b.fill;
+      let label, pts, color;
+      if      (f > 1.05)   { label = 'あふれた！'; pts = -10; color = '#ff6b6b'; }
+      else if (f >= 0.85)  { label = 'PERFECT!!'; pts = 100;  color = '#ffd700'; }
+      else if (f >= 0.65)  { label = 'GOOD!';     pts =  60;  color = '#6bff8a'; }
+      else if (f >= 0.40)  { label = 'OK';        pts =  30;  color = '#8ab4ff'; }
+      else                 { label = 'MISS';      pts =   0;  color = '#777';    }
+
+      totalScore = Math.max(0, totalScore + pts);
+      document.getElementById('score').textContent = totalScore;
+      document.getElementById('count').textContent = bottlesCnt;
+
+      const sign = pts > 0 ? '+' : '';
+      popups.push({
+        x: b.x,
+        y: BOTTLE_TOP - 14,
+        text: `${label}  ${sign}${pts}`,
+        color,
+        alpha: 1.0
+      });
+
+      speed = Math.min(speed + 0.04, 2.5);
+    }
+
+    // ---- draw ----
+    function drawBg() {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+      ctx.lineWidth = 1;
+      for (let y = 0; y < CONV_Y; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (let x = 0; x < W; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, CONV_Y); ctx.stroke();
+      }
+    }
+
+    function drawConveyor() {
+      ctx.fillStyle = '#2e2e2e';
+      ctx.fillRect(0, CONV_Y, W, H - CONV_Y);
+      for (let x = -40 + convOff % 40; x < W + 40; x += 40) {
+        ctx.fillStyle = 'rgba(255,255,255,0.05)';
+        ctx.fillRect(x, CONV_Y, 20, H - CONV_Y);
+      }
+      ctx.fillStyle = '#555';
+      ctx.fillRect(0, CONV_Y, W, 3);
+    }
+
+    function drawDispenser() {
+      // Arm
+      ctx.fillStyle = '#4a4a6a';
+      ctx.fillRect(DISP_X - 5, 0, 10, NOZZLE_Y - 16);
+
+      // Body
+      ctx.fillStyle = '#6868a0';
+      ctx.beginPath();
+      ctx.roundRect(DISP_X - 48, 8, 96, 52, 8);
+      ctx.fill();
+      // Sheen
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.beginPath();
+      ctx.roundRect(DISP_X - 44, 11, 88, 20, 5);
+      ctx.fill();
+      // Label
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.font = 'bold 12px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('🥛 MILK', DISP_X, 50);
+
+      // Nozzle
+      ctx.fillStyle = '#484868';
+      ctx.beginPath();
+      ctx.roundRect(DISP_X - 9, 60, 18, 28, 4);
+      ctx.fill();
+      ctx.fillStyle = '#363656';
+      ctx.fillRect(DISP_X - 6, 72, 12, 10);
+
+      // Zone guide lines
+      ctx.strokeStyle = 'rgba(255,220,0,0.16)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([5, 6]);
+      for (const xz of [DISP_X - ZONE, DISP_X + ZONE]) {
+        ctx.beginPath();
+        ctx.moveTo(xz, NOZZLE_Y + 10);
+        ctx.lineTo(xz, CONV_Y);
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+
+    function drawStream() {
+      const t = Date.now() / 70;
+      const underZone = Math.abs(bottle.x - DISP_X) < ZONE;
+      const endY = underZone ? BOTTLE_TOP : CONV_Y;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(255,255,255,0.45)';
+      ctx.shadowBlur  = 10;
+      ctx.strokeStyle = 'rgba(255,255,255,0.88)';
+      ctx.lineWidth   = 7;
+      ctx.lineCap     = 'round';
+      ctx.beginPath();
+      ctx.moveTo(DISP_X, NOZZLE_Y + 10);
+      for (let y = NOZZLE_Y + 10; y <= endY; y += 4) {
+        ctx.lineTo(DISP_X + Math.sin(y * 0.22 + t) * 1.8, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawBottle(b) {
+      const x     = b.x;
+      const spill = b.fill > 1.05;
+
+      ctx.save();
+
+      // Milk fill – clipped to body rectangle
+      if (b.fill > 0) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x - BODY_W / 2, BODY_TOP, BODY_W, BODY_H);
+        ctx.clip();
+
+        const fillH = Math.min(b.fill, 1.0) * BODY_H;
+        const fillY = BOTTLE_BOTTOM - fillH;
+        const mg = ctx.createLinearGradient(0, fillY, 0, BOTTLE_BOTTOM);
+        mg.addColorStop(0, 'rgba(228,246,255,0.95)');
+        mg.addColorStop(1, 'rgba(195,230,255,0.98)');
+        ctx.fillStyle = mg;
+        ctx.fillRect(x - BODY_W / 2, fillY, BODY_W, fillH);
+        // Surface glint
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.fillRect(x - BODY_W / 2, fillY, BODY_W, 2.5);
+
+        ctx.restore();
+      }
+
+      // Target dashed line at 90%
+      const tY = BOTTLE_BOTTOM - 0.9 * BODY_H;
+      ctx.strokeStyle = 'rgba(255,220,0,0.55)';
+      ctx.lineWidth   = 1.5;
+      ctx.setLineDash([3, 4]);
+      ctx.beginPath();
+      ctx.moveTo(x - BODY_W / 2 + 5, tY);
+      ctx.lineTo(x + BODY_W / 2 - 5, tY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Bottle outline
+      ctx.strokeStyle = spill ? '#ff9090' : 'rgba(170,215,255,0.88)';
+      ctx.lineWidth   = 2.5;
+      ctx.fillStyle   = spill ? 'rgba(255,80,80,0.08)' : 'rgba(190,225,255,0.06)';
+
+      ctx.beginPath();
+      ctx.moveTo(x - BODY_W / 2 + 6, BOTTLE_BOTTOM);
+      ctx.lineTo(x + BODY_W / 2 - 6, BOTTLE_BOTTOM);
+      ctx.arcTo(x + BODY_W / 2, BOTTLE_BOTTOM, x + BODY_W / 2, BOTTLE_BOTTOM - 6, 6);
+      ctx.lineTo(x + BODY_W / 2, BODY_TOP + 6);
+      ctx.lineTo(x + NECK_W / 2, BODY_TOP);         // right shoulder
+      ctx.lineTo(x + NECK_W / 2, BOTTLE_TOP + 5);   // right neck
+      ctx.arcTo(x + NECK_W / 2, BOTTLE_TOP, x + NECK_W / 2 - 5, BOTTLE_TOP, 5);
+      ctx.lineTo(x - NECK_W / 2 + 5, BOTTLE_TOP);
+      ctx.arcTo(x - NECK_W / 2, BOTTLE_TOP, x - NECK_W / 2, BOTTLE_TOP + 5, 5);
+      ctx.lineTo(x - NECK_W / 2, BODY_TOP);         // left neck
+      ctx.lineTo(x - BODY_W / 2, BODY_TOP + 6);     // left shoulder
+      ctx.lineTo(x - BODY_W / 2, BOTTLE_BOTTOM - 6);
+      ctx.arcTo(x - BODY_W / 2, BOTTLE_BOTTOM, x - BODY_W / 2 + 6, BOTTLE_BOTTOM, 6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Highlight stripe
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.beginPath();
+      ctx.ellipse(x - BODY_W / 4 + 2, BODY_TOP + 28, 5, 18, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Overflow drip
+      if (spill) {
+        ctx.fillStyle = 'rgba(200,235,255,0.75)';
+        ctx.beginPath();
+        ctx.ellipse(x, BOTTLE_TOP - 1, 14, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    function drawPopups() {
+      popups.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha  = p.alpha;
+        ctx.textAlign    = 'center';
+        ctx.font         = 'bold 20px system-ui';
+        // Shadow
+        ctx.fillStyle    = 'rgba(0,0,0,0.55)';
+        ctx.fillText(p.text, p.x + 1, p.y + 2);
+        // Text
+        ctx.fillStyle    = p.color;
+        ctx.fillText(p.text, p.x, p.y);
+        ctx.restore();
+      });
+    }
+
+    function loop() {
+      update();
+      drawBg();
+      drawConveyor();
+      drawDispenser();
+      if (pouring) drawStream();
+      drawBottle(bottle);
+      drawPopups();
+      requestAnimationFrame(loop);
+    }
+
+    // ---- controls ----
+    const btn = document.getElementById('btn');
+    const start = () => { pouring = true;  btn.classList.add('held'); };
+    const stop  = () => { pouring = false; btn.classList.remove('held'); };
+
+    btn.addEventListener('mousedown',  e => { e.preventDefault(); start(); });
+    btn.addEventListener('mouseup',    stop);
+    btn.addEventListener('mouseleave', stop);
+    btn.addEventListener('touchstart', e => { e.preventDefault(); start(); }, { passive: false });
+    btn.addEventListener('touchend',   e => { e.preventDefault(); stop();  }, { passive: false });
+
+    document.addEventListener('keydown', e => { if (e.code === 'Space' && !e.repeat) { e.preventDefault(); start(); } });
+    document.addEventListener('keyup',   e => { if (e.code === 'Space') stop(); });
+
+    loop();
+  </script>
 </body>
 </html>
